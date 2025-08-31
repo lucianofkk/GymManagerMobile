@@ -1,12 +1,11 @@
-import { Stack } from 'expo-router'
-import React from 'react'
+//app/_layout.tsx
+    import { Stack } from 'expo-router';
 
-    const RootNavigation = () => {
-        return (
-            <Stack>  
-                    <Stack.Screen name="index" options={{ headerShown: false }} />
-            </Stack>
-        )
-    }
-
-export default RootNavigation
+    export default function RootLayout() {
+    return (
+        <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        </Stack>
+    );
+}
