@@ -1,15 +1,17 @@
 import { StyleSheet } from 'react-native';
+import { COLORS } from '../constants/colors'; // importar una paleta de colores definida
 
+// Estilos para la tarjeta de miembro en la lista
 export const styles = StyleSheet.create({
   memberCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     marginBottom: 12,
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.background,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -21,23 +23,23 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.background,
   },
-  avatarText: { fontSize: 24 },
+  avatarText: { fontSize: 24, color: COLORS.text },
   memberInfo: { flex: 1 },
   memberName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1F2937',
+    color: COLORS.text,
     marginBottom: 4,
   },
   memberNumber: {
     fontSize: 14,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     marginBottom: 8,
   },
   quotaContainer: {
@@ -47,7 +49,7 @@ export const styles = StyleSheet.create({
   quotaLabel: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#374151',
+    color: COLORS.text,
     marginRight: 8,
   },
   statusBadge: {
@@ -58,7 +60,7 @@ export const styles = StyleSheet.create({
   statusText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.white,
     textTransform: 'uppercase',
   },
 });

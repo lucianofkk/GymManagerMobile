@@ -1,40 +1,43 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { styles } from '../styles/memberCardStyles';
-import { Member } from '../types/type';
+import { Client } from '../types/type';
 
 interface MemberCardProps {
-  member: Member;
-  onPress: (member: Member) => void;
+    member: Client;
+    onPress: (member: Client) => void;
 }
 
 /**
- * tarjeta que muestra la información basica de un miembro.
- * al presionarla, se ejecuta 'onPress' con el objeto del miembro.
+ * Tarjeta que muestra la información básica de un cliente.
+ * Al presionarla, se ejecuta 'onPress' con el objeto del cliente.
  */
 export const MemberCard: React.FC<MemberCardProps> = ({ member, onPress }) => {
-  return (
-    <TouchableOpacity
-      style={styles.memberCard}
-      activeOpacity={0.7}
-      onPress={() => onPress(member)}
-    >
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>👤</Text>
-        </View>
-      </View>
+    return (
+        <TouchableOpacity
+            style={styles.memberCard}
+            activeOpacity={0.7}
+            onPress={() => onPress(member)}
+        >
+            <View style={styles.avatarContainer}>
+                <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>👤</Text>
+                </View>
+            </View>
 
-      <View style={styles.memberInfo}>
-        <Text style={styles.memberName}>{member.name}</Text>
-        <Text style={styles.memberNumber}>Número: {member.number}</Text>
-        <View style={styles.quotaContainer}>
-          <Text style={styles.quotaLabel}>CUOTA</Text>
-          <View style={[styles.statusBadge, { backgroundColor: member.statusColor }]}>
-            <Text style={styles.statusText}>{member.status}</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+            <View style={styles.memberInfo}>
+                {/* Concatenamos el nombre y apellido */}
+                <Text style={styles.memberName}>{member.firstName} {member.lastName}</Text>
+                {/* Usamos la propiedad phoneNumber */}
+                <Text style={styles.memberNumber}>Número: {member.phoneNumber}</Text>
+                <View style={styles.quotaContainer}>
+                    <Text style={styles.quotaLabel}>CUOTA</Text>
+                    {/* El estado de la cuota basado en isActive */}
+                    <View style={[styles.statusBadge, { backgroundColor: member.isActive ? '#10B981' : '#EF4444' }]}>
+                        <Text style={styles.statusText}>{member.isActive ? 'ACTIVA' : 'VENCIDA'}</Text>
+                    </View>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
 };

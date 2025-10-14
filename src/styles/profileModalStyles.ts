@@ -1,29 +1,30 @@
 import { StyleSheet } from 'react-native';
+import { COLORS } from '../constants/colors';
 
 export const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // este conviene dejarlo asi
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
   modalContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     width: '100%',
     maxWidth: 320,
     overflow: 'hidden',
   },
   modalHeader: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: COLORS.background,
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'flex-end',
   },
   closeButton: {
     padding: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: COLORS.background,
     borderRadius: 20,
     width: 36,
     height: 36,
@@ -32,7 +33,7 @@ export const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 16,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     fontWeight: 'bold',
   },
   modalContent: { padding: 24 },
@@ -45,23 +46,23 @@ export const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: COLORS.background,
   },
-  avatarText: { fontSize: 24 },
+  avatarText: { fontSize: 24, color: COLORS.text },
   memberInfoModal: { flex: 1 },
   memberNameModal: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: COLORS.text,
     marginBottom: 4,
   },
   memberNumberModal: {
     fontSize: 14,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     marginBottom: 12,
   },
   quotaContainerModal: {
@@ -71,7 +72,7 @@ export const styles = StyleSheet.create({
   quotaLabelModal: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#374151',
+    color: COLORS.text,
     marginRight: 8,
   },
   statusBadgeModal: {
@@ -82,7 +83,7 @@ export const styles = StyleSheet.create({
   statusTextModal: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.white,
     textTransform: 'uppercase',
   },
   editButton: {
@@ -94,13 +95,13 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   editButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
   editDescription: {
     fontSize: 12,
-    color: '#6B7280',
+    color: COLORS.textSecondary,
     textAlign: 'center',
   },
 });

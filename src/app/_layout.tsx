@@ -1,10 +1,10 @@
-//app/_layout.tsx
-    import { Stack } from 'expo-router';
+// app/_layout.tsx
+import { Stack } from 'expo-router';
 
-    export default function RootLayout() {
+export default function RootLayout() {
     return (
         <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)/about" />
+        {/* NO especifiques rutas específicas aquí */}
         </Stack>
     );
 }

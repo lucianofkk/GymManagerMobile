@@ -9,3 +9,5 @@ export const COLORS = {
   text: '#333333',
   textSecondary: '#666666',
 };
+
+// #2563EB
