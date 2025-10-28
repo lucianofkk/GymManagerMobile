@@ -1,116 +1,354 @@
 // src/app/(clients)/newMember.tsx
-import React, { useEffect, useState } from 'react';
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { addClient, getClients } from '../../services/clientService';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { addClient, getClients } from '../../services/storageService';
 import { Client } from '../../types/type';
 
 export default function NewClientScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState<'Masculino' | 'Femenino'>('Masculino');
+  const [plan, setPlan] = useState<'Basic' | 'Standard' | 'Premium'>('Standard');
   const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [adding, setAdding] = useState(false);
 
-  useEffect(() => {
-    const loadClients = async () => {
+  // Cargar clientes cuando la pantalla se enfoca
+  useFocusEffect(
+    useCallback(() => {
+      loadClients();
+    }, [])
+  );
+
+  const loadClients = async () => {
+    try {
+      setLoading(true);
       const data = await getClients();
       setClients(data);
-    };
-    loadClients();
-  }, []);
+    } catch (error) {
+      console.error('Error loading clients:', error);
+      Alert.alert('Error', 'No se pudieron cargar los clientes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    const phoneRegex = /^[0-9]{7,}$/; // Mínimo 7 dígitos
+    return phoneRegex.test(phone.replace(/\D/g, ''));
+  };
 
   const handleAddClient = async () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('Error', 'Por favor completa los campos obligatorios');
+    // Validaciones
+    if (!firstName.trim()) {
+      Alert.alert('Error', 'Por favor ingresa el nombre');
       return;
     }
 
-    const newClient: Client = {
-      firstName,
-      lastName,
-      gender,
-      phoneNumber: phoneNumber || undefined,
-      isActive: true,
-    };
+    if (!lastName.trim()) {
+      Alert.alert('Error', 'Por favor ingresa el apellido');
+      return;
+    }
 
-    await addClient(newClient);
-    Alert.alert('Éxito', 'Cliente agregado correctamente');
+    if (email.trim() && !validateEmail(email)) {
+      Alert.alert('Error', 'Por favor ingresa un email válido');
+      return;
+    }
 
-    // Limpiar formulario
-    setFirstName('');
-    setLastName('');
-    setPhoneNumber('');
-    setGender('Masculino');
+    if (phoneNumber.trim() && !validatePhoneNumber(phoneNumber)) {
+      Alert.alert('Error', 'Por favor ingresa un teléfono válido (mínimo 7 dígitos)');
+      return;
+    }
 
-    // Actualizar lista
-    const data = await getClients();
-    setClients(data);
+    try {
+      setAdding(true);
+
+      const newClient: Omit<Client, 'id'> = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        gender,
+        phoneNumber: phoneNumber.trim() || undefined,
+        email: email.trim() || undefined,
+        isActive: true,
+        plan,
+        joinDate: new Date().toISOString().split('T')[0],
+        nextPaymentDate: new Date().toISOString().split('T')[0],
+        daysUntilExpiration: 30,
+      };
+
+      await addClient(newClient);
+      Alert.alert('Éxito', 'Cliente agregado correctamente');
+
+      // Limpiar formulario
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPhoneNumber('');
+      setGender('Masculino');
+      setPlan('Standard');
+
+      // Actualizar lista
+      await loadClients();
+    } catch (error) {
+      console.error('Error adding client:', error);
+      Alert.alert('Error', 'No se pudo agregar el cliente');
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Nuevo Cliente</Text>
+        <Text style={styles.subtitle}>Completa los datos para registrar un nuevo cliente</Text>
 
-        <Text style={styles.label}>Nombre</Text>
+        {/* Nombre */}
+        <Text style={styles.label}>Nombre *</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ingresa el nombre"
+          placeholder="Ej: Juan"
           value={firstName}
           onChangeText={setFirstName}
+          editable={!adding}
+          placeholderTextColor="#9CA3AF"
         />
 
-        <Text style={styles.label}>Apellido</Text>
+        {/* Apellido */}
+        <Text style={styles.label}>Apellido *</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ingresa el apellido"
+          placeholder="Ej: Pérez"
           value={lastName}
           onChangeText={setLastName}
+          editable={!adding}
+          placeholderTextColor="#9CA3AF"
         />
 
-        <Text style={styles.label}>Número (opcional)</Text>
+        {/* Email */}
+        <Text style={styles.label}>Email (opcional)</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ingresa el número"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          keyboardType="phone-pad"
+          placeholder="Ej: juan@example.com"
+          value={email}
+          onChangeText={setEmail}
+          editable={!adding}
+          keyboardType="email-address"
+          placeholderTextColor="#9CA3AF"
         />
 
-        <Text style={styles.label}>Género</Text>
-        <View style={styles.statusContainer}>
-          {['Masculino', 'Femenino'].map((g) => (
+        {/* Teléfono */}
+        <Text style={styles.label}>Teléfono (opcional)</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ej: 3644123456"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          editable={!adding}
+          keyboardType="phone-pad"
+          placeholderTextColor="#9CA3AF"
+        />
+
+        {/* Género */}
+        <Text style={styles.label}>Género *</Text>
+        <View style={styles.genderContainer}>
+          {(['Masculino', 'Femenino'] as const).map((g) => (
             <TouchableOpacity
               key={g}
               style={[
-                styles.statusButton,
-                gender === g && { backgroundColor: '#444' },
+                styles.genderButton,
+                gender === g && styles.genderButtonActive,
               ]}
-              onPress={() => setGender(g as 'Masculino' | 'Femenino')}
+              onPress={() => setGender(g)}
+              disabled={adding}
             >
-              <Text style={[styles.statusText, gender === g && { color: '#fff' }]}>
+              <Text
+                style={[
+                  styles.genderText,
+                  gender === g && styles.genderTextActive,
+                ]}
+              >
                 {g}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={handleAddClient}>
-          <Text style={styles.addButtonText}>AGREGAR CLIENTE</Text>
+        {/* Plan */}
+        <Text style={styles.label}>Plan de Membresía *</Text>
+        <View style={styles.planContainer}>
+          {(['Basic', 'Standard', 'Premium'] as const).map((p) => (
+            <TouchableOpacity
+              key={p}
+              style={[
+                styles.planButton,
+                plan === p && styles.planButtonActive,
+              ]}
+              onPress={() => setPlan(p)}
+              disabled={adding}
+            >
+              <Text
+                style={[
+                  styles.planText,
+                  plan === p && styles.planTextActive,
+                ]}
+              >
+                {p}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Botón Agregar */}
+        <TouchableOpacity
+          style={[styles.addButton, adding && styles.addButtonDisabled]}
+          onPress={handleAddClient}
+          disabled={adding}
+        >
+          {adding ? (
+            <>
+              <ActivityIndicator color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.addButtonText}>Agregando...</Text>
+            </>
+          ) : (
+            <Text style={styles.addButtonText}>AGREGAR CLIENTE</Text>
+          )}
         </TouchableOpacity>
 
-        {clients.length > 0 && (
-          <View style={{ marginTop: 32 }}>
-            <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
-              Clientes existentes:
+        {/* Lista de Clientes */}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1E40AF" />
+            <Text style={styles.loadingText}>Cargando clientes...</Text>
+          </View>
+        ) : clients.length > 0 ? (
+          <View style={styles.clientsListContainer}>
+            <Text style={styles.clientsListTitle}>
+              📋 Clientes Registrados ({clients.length})
             </Text>
-            {clients.map((c) => (
-              <View key={c.id} style={styles.clientCard}>
-                <Text style={styles.clientText}>
-                  {c.firstName} {c.lastName} - {c.gender}{c.phoneNumber ? ` - ${c.phoneNumber}` : ''}
-                </Text>
-              </View>
-            ))}
+            <View style={styles.clientsList}>
+              {clients.map((c) => (
+                <View
+                  key={c.id}
+                  style={[
+                    styles.clientCard,
+                    {
+                      borderLeftColor: c.isActive ? '#10B981' : '#EF4444',
+                      borderLeftWidth: 4,
+                    },
+                  ]}
+                >
+                  <View style={styles.clientCardHeader}>
+                    <Text style={styles.clientName}>
+                      {c.firstName} {c.lastName}
+                    </Text>
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        {
+                          backgroundColor: c.isActive ? '#D1FAE5' : '#FEE2E2',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: c.isActive ? '#065F46' : '#991B1B' },
+                        ]}
+                      >
+                        {c.isActive ? 'Activo' : 'Inactivo'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.clientDetails}>
+                    <Text style={styles.clientDetail}>
+                      👤 {c.gender}
+                    </Text>
+                    {c.phoneNumber && (
+                      <Text style={styles.clientDetail}>
+                        📱 {c.phoneNumber}
+                      </Text>
+                    )}
+                    {c.email && (
+                      <Text style={styles.clientDetail}>
+                        ✉️ {c.email}
+                      </Text>
+                    )}
+                    <Text style={styles.clientDetail}>
+                      🏋️ {c.plan || 'Sin plan'}
+                    </Text>
+                  </View>
+
+                  {c.daysUntilExpiration !== undefined && (
+                    <View
+                      style={[
+                        styles.expirationBadge,
+                        {
+                          backgroundColor:
+                            c.daysUntilExpiration < 0
+                              ? '#FEE2E2'
+                              : c.daysUntilExpiration <= 7
+                              ? '#FEF3C7'
+                              : '#D1FAE5',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.expirationText,
+                          {
+                            color:
+                              c.daysUntilExpiration < 0
+                                ? '#991B1B'
+                                : c.daysUntilExpiration <= 7
+                                ? '#92400E'
+                                : '#065F46',
+                          },
+                        ]}
+                      >
+                        {c.daysUntilExpiration < 0
+                          ? `⚠️ Vencido hace ${Math.abs(c.daysUntilExpiration)} días`
+                          : c.daysUntilExpiration === 0
+                          ? '🔴 Vence hoy'
+                          : `📅 Vence en ${c.daysUntilExpiration} días`}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateIcon}>👥</Text>
+            <Text style={styles.emptyStateText}>
+              No hay clientes registrados aún
+            </Text>
+            <Text style={styles.emptyStateSubtext}>
+              Agrega el primer cliente usando el formulario anterior
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -119,10 +357,32 @@ export default function NewClientScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
-  scrollContent: { padding: 20 },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 24, color: '#111827' },
-  label: { fontSize: 14, fontWeight: '500', color: '#6B7280', marginBottom: 8 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 8,
+    color: '#111827',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+    marginTop: 12,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -138,37 +398,169 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
   },
-  statusContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  statusButton: {
+  genderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 12,
+  },
+  genderButton: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingVertical: 14,
-    marginHorizontal: 4,
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
-  statusText: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  genderButtonActive: {
+    borderColor: '#1E40AF',
+    backgroundColor: '#EFF6FF',
+  },
+  genderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  genderTextActive: {
+    color: '#1E40AF',
+  },
+  planContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    gap: 12,
+  },
+  planButton: {
+    flex: 1,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  planButtonActive: {
+    borderColor: '#10B981',
+    backgroundColor: '#F0FDF4',
+  },
+  planText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  planTextActive: {
+    color: '#10B981',
+  },
   addButton: {
-    backgroundColor: '#1D4ED8',
+    backgroundColor: '#1E40AF',
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#1D4ED8',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: '#1E40AF',
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
+    marginBottom: 24,
   },
-  addButtonText: { fontSize: 18, fontWeight: '700', color: '#fff' },
+  addButtonDisabled: {
+    opacity: 0.6,
+  },
+  addButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 8,
+  },
+  clientsListContainer: {
+    marginTop: 12,
+  },
+  clientsListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#111827',
+  },
+  clientsList: {
+    gap: 12,
+  },
   clientCard: {
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#fff',
-    marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
   },
-  clientText: { fontSize: 16, color: '#111827' },
+  clientCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  clientName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    flex: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  clientDetails: {
+    gap: 6,
+    marginBottom: 12,
+  },
+  clientDetail: {
+    fontSize: 13,
+    color: '#6B7280',
+  },
+  expirationBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  expirationText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyStateIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+    opacity: 0.5,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#6B7280',
+  },
 });

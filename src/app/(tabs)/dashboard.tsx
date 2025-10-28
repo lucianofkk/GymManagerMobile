@@ -1,4 +1,6 @@
-    import React, { useEffect, useState } from 'react';
+// src/app/(tabs)/dashboard.tsx
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
     Dimensions,
     RefreshControl,
@@ -126,11 +128,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
     const loadDashboardData = async () => {
         // TODO: Conectar con Firebase
         setStats({
-        totalClients: 156,
-        activeClients: 142,
-        expiringThisWeek: 8,
-        monthlyIncome: 284500,
-        newClientsThisMonth: 12,
+        totalClients: 7,
+        activeClients: 5,
+        expiringThisWeek: 2,
+        monthlyIncome: 150000,
+        newClientsThisMonth: 2,
         });
 
         setRecentActivities([
@@ -173,8 +175,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
     }, []);
 
     const handleQuickAction = (action: string) => {
-        console.log(`Quick action: ${action}`);
-        // TODO: Implementar navegación a las pantallas correspondientes
+        switch (action) {
+            case 'clients':
+                router.push('/(clients)/membersList');
+                break;
+            case 'add_client':
+                router.push('/(clients)/newMember');
+                break;
+            case 'payments':
+                // router.push('/payments'); // Crear esta pantalla después
+                break;
+            default:
+                console.log(`Action: ${action}`);
+        }
     };
 
     return (
