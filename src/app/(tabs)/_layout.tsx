@@ -1,4 +1,4 @@
-// app/(tabs)/_layout.tsx
+// src/app/(tabs)/_layout.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
@@ -7,8 +7,8 @@ export default function TabsLayout() {
     <Tabs 
       screenOptions={{ 
         headerShown: false,
-        tabBarActiveTintColor: '#1E3A8A', // Color azul cuando está activo
-        tabBarInactiveTintColor: '#6B7280', // Color gris cuando está inactivo
+        tabBarActiveTintColor: '#1E3A8A',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
@@ -16,6 +16,15 @@ export default function TabsLayout() {
         },
       }}
     >
+      <Tabs.Screen 
+        name="dashboard" 
+        options={{ 
+          title: 'Dashboard',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bar-chart" size={size} color={color} />
+          )
+        }} 
+      />
       <Tabs.Screen 
         name="(clients)" 
         options={{ 
@@ -26,11 +35,11 @@ export default function TabsLayout() {
         }} 
       />
       <Tabs.Screen 
-        name="dashboard" 
+        name="plans" 
         options={{ 
-          title: 'Dashboard',
+          title: 'Planes',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart" size={size} color={color} />
+            <Ionicons name="pricetags" size={size} color={color} />
           )
         }} 
       />
