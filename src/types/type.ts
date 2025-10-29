@@ -1,47 +1,57 @@
 // src/types/type.ts
 
+// ============ CLIENTS ============
 export interface Client {
   id: string;
   firstName: string;
   lastName: string;
+  phoneNumber?: string; // Opcional
   gender: 'Masculino' | 'Femenino';
-  phoneNumber?: string;
   isActive: boolean;
-  plan?: string; // Basic, Standard, Premium
-  joinDate?: string; // YYYY-MM-DD
-  nextPaymentDate?: string; // YYYY-MM-DD
-  daysUntilExpiration?: number;
-  email?: string;
-  notes?: string;
 }
 
-export interface Payment {
+// ============ MEMBERSHIP PLANS ============
+export interface MembershipPlan {
   id: string;
-  clientId: string;
-  amount: number;
-  date: string; // YYYY-MM-DD
-  method: 'Efectivo' | 'Transferencia' | 'Tarjeta' | 'Cheque';
-  status: 'paid' | 'pending' | 'overdue';
-  notes?: string;
-}
-
-export interface Plan {
-  id: string;
-  name: string; // Basic, Standard, Premium
+  planName: string;
+  duration: number; // Días de duración
   price: number;
   description: string;
-  benefits: string[];
+  isActive: boolean;
 }
 
-export interface Penalty {
+// ============ SUBSCRIPTIONS ============
+export interface Subscription {
   id: string;
-  clientId: string;
-  amount: number;
-  reason: string;
-  date: string; // YYYY-MM-DD
-  paid: boolean;
+  clientId: string; // Reference to Client
+  planId: string; // Reference to MembershipPlan
+  startDate: Date;
+  endDate: Date;
+  paymentStatus: 'paid' | 'pending' | 'overdue';
+  lateFee: number;
 }
 
+// ============ PAYMENTS ============
+export interface Payment {
+  id: string;
+  clientId: string; // Reference to Client
+  subscriptionId: string; // Reference to Subscription
+  amount: number;
+  paymentDate: Date;
+  paymentMethod: 'Efectivo' | 'Transferencia' | 'Tarjeta' | 'Cheque';
+}
+
+// ============ TIPOS EXTENDIDOS PARA LA UI ============
+
+// Cliente con información de suscripción (para mostrar en la UI)
+export interface ClientWithSubscription extends Client {
+  currentPlan?: MembershipPlan;
+  subscription?: Subscription;
+  daysUntilExpiration?: number;
+  nextPaymentDate?: Date;
+}
+
+// ============ DASHBOARD STATS ============
 export interface DashboardStats {
   totalClients: number;
   activeClients: number;
@@ -50,6 +60,7 @@ export interface DashboardStats {
   newClientsThisMonth: number;
 }
 
+// ============ RECENT ACTIVITY ============
 export interface RecentActivity {
   id: string;
   type: 'payment' | 'new_client' | 'renewal' | 'expiring';
