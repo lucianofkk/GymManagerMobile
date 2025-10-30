@@ -1,50 +1,180 @@
-# Welcome to your Expo app 👋
+# 💪 Gym Manager - VEO'S GYM
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Aplicación móvil para digitalizar la gestión de socios, pagos y membresías del gimnasio VEO'S GYM
 
-## Get started
+![React Native](https://img.shields.io/badge/React%20Native-blue.svg)
+![Firebase](https://img.shields.io/badge/Firebase-orange.svg)
+![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow.svg)
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 📖 ¿Qué es Gym Manager?
 
-2. Start the app
+**Gym Manager** es una aplicación móvil creada para **VEO'S GYM**, un gimnasio de barrio con aproximadamente 200 socios. La app reemplaza el sistema manual de gestión (cuadernos físicos) por una solución digital moderna que permite administrar clientes, controlar pagos y enviar alertas automáticas de vencimiento.
 
-   ```bash
-   npx expo start
-   ```
+### 🎯 El Problema
 
-In the output, you'll find options to open the app in a
+Actualmente, VEO'S GYM gestiona todo manualmente en cuadernos, lo que genera:
+- Errores en el registro de pagos
+- Pagos atrasados que no se detectan a tiempo
+- Pérdida de tiempo buscando información
+- Cálculo manual de recargos por retrasos
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### ✅ La Solución
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Una app móvil intuitiva que:
+- Registra todos los clientes digitalmente
+- Envía alertas 2 días antes del vencimiento
+- Calcula multas automáticamente ($2000 cada 4 días)
+- Permite buscar clientes al instante
+- Muestra el estado de cada socio con colores: **Verde** (al día), **Amarillo** (por vencer), **Rojo** (vencido)
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## ✨ Funcionalidades Principales
 
+### 📊 Panel de Control
+Un resumen visual que muestra:
+- Cantidad de clientes activos
+- Membresías que vencen esta semana
+- Ingresos del mes actual
+- Nuevos clientes registrados
+
+### 👥 Gestión de Clientes
+- Agregar nuevos socios con sus datos personales
+- Ver lista completa de clientes
+- Buscar por nombre o apellido
+- Ver estado de cada membresía (activa/vencida)
+- Asignar planes: Basic, Standard o Premium
+
+### 💳 Control de Pagos
+- Registrar pagos (efectivo, transferencia, tarjeta)
+- Marcar como pagado/no pagado con un simple switch
+- Ver historial completo de pagos por cliente
+- Cálculo automático de recargos por retrasos
+
+### 🔔 Notificaciones Automáticas
+- Alertas 2 días antes del vencimiento
+- Recordatorios de pagos pendientes
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+**Aplicación Móvil:**
+- React Native (funciona en Android e iOS)
+- Expo (herramienta de desarrollo)
+
+**Base de Datos:**
+- Firebase (almacenamiento en la nube en tiempo real)
+
+**Diseño:**
+- Figma (para diseñar las pantallas)
+
+**Organización:**
+- GitHub (control de versiones del código)
+- Jira (seguimiento de tareas con metodología Scrum)
+
+---
+
+## 📱 Capturas de Pantalla
+
+La aplicación cuenta con las siguientes pantallas:
+
+1. **Login** - Inicio de sesión seguro
+2. **Dashboard** - Resumen general con métricas
+3. **Lista de Clientes** - Todos los socios con búsqueda
+4. **Nuevo Cliente** - Formulario para agregar socios
+5. **Detalle de Cliente** - Información completa y historial
+6. **Historial de Pagos** - Registro de todas las transacciones
+
+---
+
+## 🚀 ¿Cómo probarlo?
+
+### Requisitos previos:
+- Tener Node.js instalado
+- Instalar Expo Go en tu celular (disponible en Play Store o App Store)
+
+### Pasos:
+
+1. Clonar el proyecto:
 ```bash
-npm run reset-project
+git clone https://github.com/lucianofkk/GymManagerMobile.git
+cd GymManagerMobile
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Instalar dependencias:
+```bash
+npm install
+```
 
-## Learn more
+3. Iniciar la aplicación:
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Escanear el código QR con Expo Go desde tu celular
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## 📊 Estado del Proyecto
 
-Join our community of developers creating universal apps.
+**Trabajo Final Integrador - Tecnicatura Universitaria en Programación**
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Progreso Actual (5 Sprints planificados):
+- ✅ **Sprint 1:** Diseño UI/UX y configuración inicial
+- ✅ **Sprint 2:** Sistema de gestión de clientes (CRUD completo)
+- 🚧 **Sprint 3:** Sistema de pagos y cálculo de multas (en desarrollo)
+- 📋 **Sprint 4:** Notificaciones y búsqueda avanzada (pendiente)
+- 📋 **Sprint 5:** Pruebas finales y documentación (pendiente)
+
+---
+
+## 💡 Impacto Esperado
+
+### Para el Gimnasio:
+- **80% menos tiempo** en gestión administrativa
+- **Cero pagos atrasados** sin detectar
+- Mayor profesionalismo y organización
+
+### Para los Socios:
+- Recordatorios automáticos de vencimientos
+- Historial transparente de pagos
+- Atención más rápida
+
+### Para la Comunidad:
+- Código abierto que puede servir de ejemplo para otros gimnasios de barrio
+
+---
+
+## 👨‍💻 Sobre el Proyecto
+
+**Desarrollo Académico**  
+Este proyecto es mi Trabajo Final Integrador para la Tecnicatura Universitaria en Programación de la UTN.
+
+**Autor:** Luciano Gabriel Frias-Klein  
+**Legajo UTN:** 29246  
+**Año:** 2025  
+**Institución:** Universidad Tecnológica Nacional
+
+---
+
+## 📞 Contacto
+
+¿Preguntas sobre el proyecto? ¿Interesado en implementarlo en tu gimnasio?
+
+- 📧 Email: [tu-email@ejemplo.com]
+- 💼 LinkedIn: [tu-perfil]
+- 🐙 GitHub: [lucianofkk](https://github.com/lucianofkk)
+
+---
+
+## 📄 Licencia
+
+Este proyecto fue desarrollado con fines académicos para VEO'S GYM.  
+Todos los derechos reservados © 2025
+
+---
+
+*"Digitalizando la gestión de gimnasios de barrio, una app a la vez"* 💪📱
