@@ -1,22 +1,22 @@
 // src/components/membersCard.tsx
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Client } from '../types/type';
+import { ClientWithSubscription } from '../services/businessLogic';
 
 interface MemberCardProps {
-    member: Client;
-    onPress: (member: Client) => void;
+    member: ClientWithSubscription;
+    onPress: (member: ClientWithSubscription) => void;
 }
 
 export const MemberCard: React.FC<MemberCardProps> = ({ member, onPress }) => {
-    const getStatusColor = (client: Client) => {
+    const getStatusColor = (client: ClientWithSubscription) => {
         const days = client.daysUntilExpiration || 0;
-        if (days < 0) return '#EF4444';
-        if (days <= 7) return '#FBBF24';
-        return '#10B981';
+        if (days < 0) return '#EF4444'; // Rojo - Vencido
+        if (days <= 7) return '#FBBF24'; // Amarillo - Por vencer
+        return '#10B981'; // Verde - Vigente
     };
 
-    const getStatusText = (client: Client) => {
+    const getStatusText = (client: ClientWithSubscription) => {
         const days = client.daysUntilExpiration || 0;
         if (days < 0) return `Vencido hace ${Math.abs(days)} días`;
         if (days === 0) return 'Vence hoy';
@@ -43,7 +43,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member, onPress }) => {
                     </Text>
                     <View style={styles.planBadge}>
                         <Text style={styles.planText}>
-                            {member.plan || 'Sin plan'}
+                            {member.currentPlan?.planName || 'Sin plan'}
                         </Text>
                     </View>
                 </View>
@@ -76,19 +76,19 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member, onPress }) => {
                         <Text style={styles.infoText}>{member.phoneNumber}</Text>
                     </View>
                 )}
-                {member.email && (
-                    <View style={styles.infoRow}>
-                        <Text style={styles.infoIcon}>✉️</Text>
-                        <Text style={styles.infoText}>{member.email}</Text>
-                    </View>
-                )}
                 <View style={styles.infoRow}>
                     <Text style={styles.infoIcon}>👤</Text>
                     <Text style={styles.infoText}>{member.gender}</Text>
                 </View>
+                {member.currentPlan && (
+                    <View style={styles.infoRow}>
+                        <Text style={styles.infoIcon}>💰</Text>
+                        <Text style={styles.infoText}>${member.currentPlan.price}</Text>
+                    </View>
+                )}
             </View>
 
-            {member.daysUntilExpiration !== undefined && (
+            {member.daysUntilExpiration !== undefined ? (
                 <View
                     style={[
                         styles.expirationBadge,
@@ -116,6 +116,12 @@ export const MemberCard: React.FC<MemberCardProps> = ({ member, onPress }) => {
                         ]}
                     >
                         {getStatusText(member)}
+                    </Text>
+                </View>
+            ) : (
+                <View style={[styles.expirationBadge, { backgroundColor: '#FEF3C7' }]}>
+                    <Text style={[styles.expirationText, { color: '#92400E' }]}>
+                        ⚠️ Sin suscripción activa
                     </Text>
                 </View>
             )}

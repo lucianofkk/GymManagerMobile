@@ -65,6 +65,18 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: 12,
   },
+  //  Agregado para mostrar el plan del miembro
+memberPlanInfo: {
+  fontSize: 14,
+  color: COLORS.text,
+  marginBottom: 12,
+  fontWeight: '500',
+},
+expirationInfo: {
+  fontSize: 12,
+  color: COLORS.textSecondary,
+  marginTop: 8,
+},
   quotaContainerModal: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -104,4 +116,68 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
+  // Agregar al final del archivo:
+actionsContainer: {
+  marginVertical: 16,
+  gap: 12,
+},
+actionButton: {
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+primaryButton: {
+  backgroundColor: '#1E40AF',
+},
+successButton: {
+  backgroundColor: '#10B981',
+},
+warningButton: {
+  backgroundColor: '#F59E0B',
+},
+actionButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '700',
+},
+planInfoContainer: {
+  marginBottom: 12,
+},
+memberPlanPrice: {
+  fontSize: 13,
+  color: '#6B7280',
+  marginTop: 2,
+},
+noPlanText: {
+  fontSize: 14,
+  color: '#92400E',
+  marginBottom: 12,
+},
+infoSection: {
+  marginTop: 16,
+  paddingTop: 16,
+  borderTopWidth: 1,
+  borderTopColor: '#E5E7EB',
+},
+infoTitle: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: '#111827',
+  marginBottom: 12,
+},
+infoRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginBottom: 8,
+},
+infoLabel: {
+  fontSize: 14,
+  color: '#6B7280',
+},
+infoValue: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: '#111827',
+},
 });

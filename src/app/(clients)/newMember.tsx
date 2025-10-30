@@ -12,17 +12,19 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { addClient, getClients } from '../../services/storageService';
-import { Client } from '../../types/type';
+// 🔥 IMPORT SERVICIOS DE FIREBASE
+import { ClientWithSubscription, getClientsWithSubscription } from '../../services/businessLogic';
+import { addClient } from '../../services/clientService';
 
 export default function NewClientScreen() {
+  // Estados del formulario
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [gender, setGender] = useState<'Masculino' | 'Femenino'>('Masculino');
-  const [plan, setPlan] = useState<'Basic' | 'Standard' | 'Premium'>('Standard');
-  const [clients, setClients] = useState<Client[]>([]);
+  
+  // Estados de la UI
+  const [clients, setClients] = useState<ClientWithSubscription[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
 
@@ -33,10 +35,11 @@ export default function NewClientScreen() {
     }, [])
   );
 
+  // 📋 CARGAR CLIENTES DESDE FIREBASE (con su info de suscripción)
   const loadClients = async () => {
     try {
       setLoading(true);
-      const data = await getClients();
+      const data = await getClientsWithSubscription();
       setClients(data);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -46,16 +49,14 @@ export default function NewClientScreen() {
     }
   };
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
+  // Validación de teléfono (opcional pero si lo ponen debe ser válido)
   const validatePhoneNumber = (phone: string): boolean => {
+    if (!phone.trim()) return true; // Si está vacío, es válido (opcional)
     const phoneRegex = /^[0-9]{7,}$/; // Mínimo 7 dígitos
     return phoneRegex.test(phone.replace(/\D/g, ''));
   };
 
+  // ➕ AGREGAR CLIENTE A FIREBASE
   const handleAddClient = async () => {
     // Validaciones
     if (!firstName.trim()) {
@@ -68,11 +69,6 @@ export default function NewClientScreen() {
       return;
     }
 
-    if (email.trim() && !validateEmail(email)) {
-      Alert.alert('Error', 'Por favor ingresa un email válido');
-      return;
-    }
-
     if (phoneNumber.trim() && !validatePhoneNumber(phoneNumber)) {
       Alert.alert('Error', 'Por favor ingresa un teléfono válido (mínimo 7 dígitos)');
       return;
@@ -81,31 +77,30 @@ export default function NewClientScreen() {
     try {
       setAdding(true);
 
-      const newClient: Omit<Client, 'id'> = {
+      // Crear el objeto cliente (solo con los campos que tenemos en Firebase)
+      const newClient = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        gender,
         phoneNumber: phoneNumber.trim() || undefined,
-        email: email.trim() || undefined,
+        gender,
         isActive: true,
-        plan,
-        joinDate: new Date().toISOString().split('T')[0],
-        nextPaymentDate: new Date().toISOString().split('T')[0],
-        daysUntilExpiration: 30,
       };
 
+      // Guardar en Firebase
       await addClient(newClient);
-      Alert.alert('Éxito', 'Cliente agregado correctamente');
+      
+      Alert.alert(
+        '✅ Éxito', 
+        'Cliente agregado correctamente.\n\n💡 Tip: Ahora puedes asignarle un plan de membresía desde la lista de clientes.'
+      );
 
       // Limpiar formulario
       setFirstName('');
       setLastName('');
-      setEmail('');
       setPhoneNumber('');
       setGender('Masculino');
-      setPlan('Standard');
 
-      // Actualizar lista
+      // Recargar lista
       await loadClients();
     } catch (error) {
       console.error('Error adding client:', error);
@@ -146,18 +141,6 @@ export default function NewClientScreen() {
           placeholderTextColor="#9CA3AF"
         />
 
-        {/* Email */}
-        <Text style={styles.label}>Email (opcional)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej: juan@example.com"
-          value={email}
-          onChangeText={setEmail}
-          editable={!adding}
-          keyboardType="email-address"
-          placeholderTextColor="#9CA3AF"
-        />
-
         {/* Teléfono */}
         <Text style={styles.label}>Teléfono (opcional)</Text>
         <TextInput
@@ -190,31 +173,6 @@ export default function NewClientScreen() {
                 ]}
               >
                 {g}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Plan */}
-        <Text style={styles.label}>Plan de Membresía *</Text>
-        <View style={styles.planContainer}>
-          {(['Basic', 'Standard', 'Premium'] as const).map((p) => (
-            <TouchableOpacity
-              key={p}
-              style={[
-                styles.planButton,
-                plan === p && styles.planButtonActive,
-              ]}
-              onPress={() => setPlan(p)}
-              disabled={adding}
-            >
-              <Text
-                style={[
-                  styles.planText,
-                  plan === p && styles.planTextActive,
-                ]}
-              >
-                {p}
               </Text>
             </TouchableOpacity>
           ))}
@@ -291,16 +249,14 @@ export default function NewClientScreen() {
                         📱 {c.phoneNumber}
                       </Text>
                     )}
-                    {c.email && (
+                    {c.currentPlan && (
                       <Text style={styles.clientDetail}>
-                        ✉️ {c.email}
+                        🏋️ {c.currentPlan.planName} - ${c.currentPlan.price}
                       </Text>
                     )}
-                    <Text style={styles.clientDetail}>
-                      🏋️ {c.plan || 'Sin plan'}
-                    </Text>
                   </View>
 
+                  {/* Mostrar estado de vencimiento si tiene suscripción */}
                   {c.daysUntilExpiration !== undefined && (
                     <View
                       style={[
@@ -333,6 +289,15 @@ export default function NewClientScreen() {
                           : c.daysUntilExpiration === 0
                           ? '🔴 Vence hoy'
                           : `📅 Vence en ${c.daysUntilExpiration} días`}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Si no tiene suscripción */}
+                  {!c.subscription && (
+                    <View style={[styles.expirationBadge, { backgroundColor: '#FEF3C7' }]}>
+                      <Text style={[styles.expirationText, { color: '#92400E' }]}>
+                        ⚠️ Sin plan asignado
                       </Text>
                     </View>
                   )}
@@ -424,33 +389,6 @@ const styles = StyleSheet.create({
   },
   genderTextActive: {
     color: '#1E40AF',
-  },
-  planContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    gap: 12,
-  },
-  planButton: {
-    flex: 1,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  planButtonActive: {
-    borderColor: '#10B981',
-    backgroundColor: '#F0FDF4',
-  },
-  planText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  planTextActive: {
-    color: '#10B981',
   },
   addButton: {
     backgroundColor: '#1E40AF',

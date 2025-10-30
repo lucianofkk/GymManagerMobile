@@ -98,3 +98,5 @@ export const permanentlyDeleteClient = async (id: string) => {
   const ref = doc(db, "clients", id);
   await deleteDoc(ref);
 };
+
+//CRUD completo para clientes

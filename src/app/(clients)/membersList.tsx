@@ -13,27 +13,29 @@ import {
     View,
 } from 'react-native';
 import { ProfileModal } from '../../components/profileModal';
-import { getClients } from '../../services/storageService';
-import { Client } from '../../types/type';
+// 🔥 IMPORTAR DESDE FIREBASE
+import { ClientWithSubscription, getClientsWithSubscription } from '../../services/businessLogic';
 
 export default function MembersListScreen() {
     const [searchText, setSearchText] = useState('');
-    const [selectedMember, setSelectedMember] = useState<Client | null>(null);
+    const [selectedMember, setSelectedMember] = useState<ClientWithSubscription | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [members, setMembers] = useState<Client[]>([]);
+    const [members, setMembers] = useState<ClientWithSubscription[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    // Cargar miembros cuando la pantalla se enfoca
     useFocusEffect(
         useCallback(() => {
             loadMembers();
         }, [])
     );
 
+    // 📋 CARGAR MIEMBROS DESDE FIREBASE (con suscripciones y planes)
     const loadMembers = async () => {
         try {
             setLoading(true);
-            const data = await getClients();
+            const data = await getClientsWithSubscription();
             setMembers(data);
         } catch (error) {
             console.error('Error loading members:', error);
@@ -42,36 +44,42 @@ export default function MembersListScreen() {
         }
     };
 
+    // 🔄 REFRESCAR LISTA
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await loadMembers();
         setRefreshing(false);
     }, []);
 
-    const handleMemberPress = (member: Client) => {
+    // 👆 ABRIR MODAL AL TOCAR UN CLIENTE
+    const handleMemberPress = (member: ClientWithSubscription) => {
         setSelectedMember(member);
         setIsModalVisible(true);
     };
 
+    // ❌ CERRAR MODAL Y RECARGAR DATOS
     const handleCloseModal = () => {
         setIsModalVisible(false);
         setSelectedMember(null);
-        loadMembers();
+        loadMembers(); // Recargar por si se editó algo
     };
 
+    // 🔍 FILTRAR CLIENTES POR BÚSQUEDA
     const filteredMembers = members.filter((m) =>
         (m.firstName?.toLowerCase().includes(searchText.toLowerCase()) ||
             m.lastName?.toLowerCase().includes(searchText.toLowerCase()))
     );
 
-    const getStatusColor = (client: Client) => {
+    // 🎨 OBTENER COLOR SEGÚN ESTADO DE VENCIMIENTO
+    const getStatusColor = (client: ClientWithSubscription) => {
         const days = client.daysUntilExpiration || 0;
-        if (days < 0) return '#EF4444';
-        if (days <= 7) return '#FBBF24';
-        return '#10B981';
+        if (days < 0) return '#EF4444'; // Rojo - Vencido
+        if (days <= 7) return '#FBBF24'; // Amarillo - Por vencer
+        return '#10B981'; // Verde - Vigente
     };
 
-    const getStatusText = (client: Client) => {
+    // 📝 OBTENER TEXTO DE ESTADO
+    const getStatusText = (client: ClientWithSubscription) => {
         const days = client.daysUntilExpiration || 0;
         if (days < 0) return `Vencido hace ${Math.abs(days)} días`;
         if (days === 0) return 'Vence hoy';
@@ -136,7 +144,7 @@ export default function MembersListScreen() {
                                         </Text>
                                         <View style={styles.planBadge}>
                                             <Text style={styles.planText}>
-                                                {member.plan || 'Sin plan'}
+                                                {member.currentPlan?.planName || 'Sin plan'}
                                             </Text>
                                         </View>
                                     </View>
@@ -169,19 +177,22 @@ export default function MembersListScreen() {
                                             <Text style={styles.infoText}>{member.phoneNumber}</Text>
                                         </View>
                                     )}
-                                    {member.email && (
-                                        <View style={styles.infoRow}>
-                                            <Text style={styles.infoIcon}>✉️</Text>
-                                            <Text style={styles.infoText}>{member.email}</Text>
-                                        </View>
-                                    )}
                                     <View style={styles.infoRow}>
                                         <Text style={styles.infoIcon}>👤</Text>
                                         <Text style={styles.infoText}>{member.gender}</Text>
                                     </View>
+                                    {member.currentPlan && (
+                                        <View style={styles.infoRow}>
+                                            <Text style={styles.infoIcon}>💰</Text>
+                                            <Text style={styles.infoText}>
+                                                ${member.currentPlan.price}
+                                            </Text>
+                                        </View>
+                                    )}
                                 </View>
 
-                                {member.daysUntilExpiration !== undefined && (
+                                {/* Badge de vencimiento */}
+                                {member.daysUntilExpiration !== undefined ? (
                                     <View
                                         style={[
                                             styles.expirationBadge,
@@ -211,6 +222,12 @@ export default function MembersListScreen() {
                                             {getStatusText(member)}
                                         </Text>
                                     </View>
+                                ) : (
+                                    <View style={[styles.expirationBadge, { backgroundColor: '#FEF3C7' }]}>
+                                        <Text style={[styles.expirationText, { color: '#92400E' }]}>
+                                            ⚠️ Sin suscripción activa
+                                        </Text>
+                                    </View>
                                 )}
                             </TouchableOpacity>
                         ))
@@ -232,6 +249,7 @@ export default function MembersListScreen() {
                 </View>
             </ScrollView>
 
+            {/* Modal de perfil */}
             <ProfileModal
                 member={selectedMember}
                 isVisible={isModalVisible}
@@ -306,6 +324,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
         elevation: 2,
+        marginBottom: 12,
     },
     cardHeader: {
         flexDirection: 'row',

@@ -30,6 +30,10 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
             <Link href="/(tabs)/about" style={styles.button}>
             <Text style={styles.buttonText}>Acerca de</Text>
             </Link>
+
+            <Link href="/(tabs)/plansScreen" style={styles.button}>
+            <Text style={styles.buttonText}>Planes</Text>
+            </Link>
         </View>
 
         {/* Sección de Autenticación */}

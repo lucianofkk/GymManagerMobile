@@ -8,6 +8,18 @@ import { getMembershipPlanById } from './membershipPlansService';
 import { getPayments } from './paymentService';
 import { getSubscriptions } from './subscriptionsService';
 
+    // Convierte un timestamp de Firestore a Date de forma segura
+    const safeToDate = (timestamp: any): Date | null => {
+    if (!timestamp) return null;
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+        return timestamp.toDate();
+    }
+    if (timestamp instanceof Date) {
+        return timestamp;
+    }
+    return null;
+    };
+
     // ============================================
     // TIPOS
     // ============================================
@@ -95,65 +107,75 @@ import { getSubscriptions } from './subscriptionsService';
             );
 
             // Obtener la suscripción más reciente
-            const activeSubscription = clientSubscriptions.sort(
-            (a, b) => b.endDate.getTime() - a.endDate.getTime()
-            )[0];
+    const activeSubscription = clientSubscriptions.sort(
+    (a, b) => {
+        const aEnd = safeToDate(a.endDate)?.getTime() || 0;
+        const bEnd = safeToDate(b.endDate)?.getTime() || 0;
+        return bEnd - aEnd;
+    }
+    )[0];
 
-            if (!activeSubscription) {
-            return {
-                id: client.id,
-                firstName: client.firstName,
-                lastName: client.lastName,
-                phoneNumber: client.phoneNumber,
-                gender: client.gender,
-                isActive: client.isActive,
-            } as ClientWithSubscription;
-            }
+    if (!activeSubscription) {
+    return {
+        id: client.id,
+        firstName: client.firstName,
+        lastName: client.lastName,
+        phoneNumber: client.phoneNumber,
+        gender: client.gender,
+        isActive: client.isActive,
+    } as ClientWithSubscription;
+    }
 
-            // Obtener el plan de la suscripción
-            const plan = await getMembershipPlanById(activeSubscription.planId);
+    // ✅ Convertir fechas de forma segura
+    const startDate = safeToDate(activeSubscription.startDate);
+    const endDate = safeToDate(activeSubscription.endDate);
 
-            const daysUntilExpiration = calculateDaysUntilExpiration(
-            activeSubscription.endDate
-            );
+    if (!endDate) {
+    console.warn(`Suscripción sin endDate para el cliente ${client.id}`);
+    }
 
-            // Actualizar paymentStatus si está vencido
-            let paymentStatus = activeSubscription.paymentStatus;
-            if (daysUntilExpiration < 0 && paymentStatus !== 'paid') {
-            paymentStatus = 'overdue';
-            }
+    const plan = await getMembershipPlanById(activeSubscription.planId);
 
-            return {
-            id: client.id,
-            firstName: client.firstName,
-            lastName: client.lastName,
-            phoneNumber: client.phoneNumber,
-            gender: client.gender,
-            isActive: client.isActive,
-            currentPlan: plan
-                ? {
-                    id: plan.id!,
-                    planName: plan.planName,
-                    price: plan.price,
-                    duration: plan.duration,
-                }
-                : undefined,
-            subscription: {
-                id: activeSubscription.id!,
-                startDate: activeSubscription.startDate,
-                endDate: activeSubscription.endDate,
-                paymentStatus,
-                lateFee:
-                paymentStatus === 'overdue'
-                    ? calculateLateFee(activeSubscription.endDate)
-                    : 0,
-            },
-            daysUntilExpiration,
-            nextPaymentDate: activeSubscription.endDate,
-            } as ClientWithSubscription;
-        })
-        );
+    const daysUntilExpiration = endDate
+    ? calculateDaysUntilExpiration(endDate)
+    : 0;
 
+    // Actualizar paymentStatus si está vencido
+    let paymentStatus = activeSubscription.paymentStatus;
+    if (endDate && daysUntilExpiration < 0 && paymentStatus !== 'paid') {
+    paymentStatus = 'overdue';
+    }
+
+    return {
+    id: client.id,
+    firstName: client.firstName,
+    lastName: client.lastName,
+    phoneNumber: client.phoneNumber,
+    gender: client.gender,
+    isActive: client.isActive,
+    currentPlan: plan
+        ? {
+            id: plan.id!,
+            planName: plan.planName,
+            price: plan.price,
+            duration: plan.duration,
+        }
+        : undefined,
+    subscription: {
+        id: activeSubscription.id!,
+        startDate: startDate || new Date(),
+        endDate: endDate || new Date(),
+        paymentStatus,
+        lateFee:
+        endDate && paymentStatus === 'overdue'
+            ? calculateLateFee(endDate)
+            : 0,
+    },
+    daysUntilExpiration,
+    nextPaymentDate: endDate || null,
+    } as ClientWithSubscription;
+    })
+);
         return clientsWithSub;
     } catch (error) {
         console.error('Error fetching clients with subscriptions:', error);
