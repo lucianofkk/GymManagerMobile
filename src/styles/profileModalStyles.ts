@@ -180,4 +180,19 @@ infoValue: {
   fontWeight: '600',
   color: '#111827',
 },
+refreshingIndicator: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#EFF6FF',
+  padding: 8,
+  borderRadius: 8,
+  marginBottom: 12,
+},
+refreshingText: {
+  fontSize: 12,
+  color: '#1E40AF',
+  marginLeft: 8,
+  fontWeight: '600',
+}
 });

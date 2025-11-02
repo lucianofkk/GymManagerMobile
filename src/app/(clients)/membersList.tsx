@@ -58,10 +58,11 @@ export default function MembersListScreen() {
     };
 
     // ❌ CERRAR MODAL Y RECARGAR DATOS
-    const handleCloseModal = () => {
+    const handleCloseModal = async () => {
         setIsModalVisible(false);
         setSelectedMember(null);
-        loadMembers(); // Recargar por si se editó algo
+        // Recargar la lista completa
+        await loadMembers();
     };
 
     // 🔍 FILTRAR CLIENTES POR BÚSQUEDA

@@ -1,7 +1,7 @@
 // src/components/profileModal.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ClientWithSubscription } from '../services/businessLogic';
+import { ClientWithSubscription, getClientWithSubscription } from '../services/businessLogic';
 import { styles } from '../styles/profileModalStyles';
 import { AssignPlanModal } from './assignPlanModal';
 import { RegisterPaymentModal } from './registerPaymentModal';
@@ -13,12 +13,34 @@ interface ProfileModalProps {
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
-  member,
+  member: initialMember,
   isVisible,
   onClose,
 }) => {
+  const [member, setMember] = useState<ClientWithSubscription | null>(initialMember);
   const [showAssignPlan, setShowAssignPlan] = useState(false);
   const [showRegisterPayment, setShowRegisterPayment] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Actualizar member cuando cambia initialMember
+  useEffect(() => {
+    setMember(initialMember);
+  }, [initialMember]);
+
+  // 🔄 Recargar datos del cliente
+  const reloadMemberData = async () => {
+    if (!member?.id) return;
+    
+    try {
+      setRefreshing(true);
+      const updatedMember = await getClientWithSubscription(member.id);
+      setMember(updatedMember);
+    } catch (error) {
+      console.error('Error reloading member:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   if (!member) return null;
 
