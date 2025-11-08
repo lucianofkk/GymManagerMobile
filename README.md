@@ -90,38 +90,6 @@ La aplicación cuenta con las siguientes pantallas:
 
 ---
 
-## 🚀 ¿Cómo probarlo?
-
-### Requisitos previos:
-- Tener Node.js instalado
-- Instalar Expo Go en tu celular (disponible en Play Store o App Store)
-
-### Pasos:
-
-1. Clonar el proyecto:
-```bash
-git clone https://github.com/lucianofkk/GymManagerMobile.git
-cd GymManagerMobile
-```
-
-2. Instalar dependencias:
-```bash
-npm install
-```
-
-3. Iniciar la aplicación:
-```bash
-npx expo start
-```
-
-4. Escanear el código QR con Expo Go desde tu celular
-
----
-
-## 📊 Estado del Proyecto
-
-**Trabajo Final Integrador - Tecnicatura Universitaria en Programación**
-
 ### Progreso Actual (5 Sprints planificados):
 - ✅ **Sprint 1:** Diseño UI/UX y configuración inicial
 - ✅ **Sprint 2:** Sistema de gestión de clientes (CRUD completo)
@@ -157,24 +125,3 @@ Este proyecto es mi Trabajo Final Integrador para la Tecnicatura Universitaria e
 **Legajo UTN:** 29246  
 **Año:** 2025  
 **Institución:** Universidad Tecnológica Nacional
-
----
-
-## 📞 Contacto
-
-¿Preguntas sobre el proyecto? ¿Interesado en implementarlo en tu gimnasio?
-
-- 📧 Email: [tu-email@ejemplo.com]
-- 💼 LinkedIn: [tu-perfil]
-- 🐙 GitHub: [lucianofkk](https://github.com/lucianofkk)
-
----
-
-## 📄 Licencia
-
-Este proyecto fue desarrollado con fines académicos para VEO'S GYM.  
-Todos los derechos reservados © 2025
-
----
-
-*"Digitalizando la gestión de gimnasios de barrio, una app a la vez"* 💪📱
