@@ -73,7 +73,6 @@ Un resumen visual que muestra:
 
 **Organización:**
 - GitHub (control de versiones del código)
-- Jira (seguimiento de tareas con metodología Scrum)
 
 ---
 
@@ -93,9 +92,9 @@ La aplicación cuenta con las siguientes pantallas:
 ### Progreso Actual (5 Sprints planificados):
 - ✅ **Sprint 1:** Diseño UI/UX y configuración inicial
 - ✅ **Sprint 2:** Sistema de gestión de clientes (CRUD completo)
-- 🚧 **Sprint 3:** Sistema de pagos y cálculo de multas (en desarrollo)
-- 📋 **Sprint 4:** Notificaciones y búsqueda avanzada (pendiente)
-- 📋 **Sprint 5:** Pruebas finales y documentación (pendiente)
+- 🚧 **Sprint 3:** Sistema de pagos y cálculo de multas (Completo)
+- 📋 **Sprint 4:** Notificaciones y búsqueda avanzada (Completo)
+- 📋 **Sprint 5:** Pruebas finales, auth y documentación (Finalizando)
 
 ---
 
@@ -107,7 +106,6 @@ La aplicación cuenta con las siguientes pantallas:
 - Mayor profesionalismo y organización
 
 ### Para los Socios:
-- Recordatorios automáticos de vencimientos
 - Historial transparente de pagos
 - Atención más rápida
 
