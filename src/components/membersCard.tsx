@@ -1,7 +1,7 @@
 // src/components/membersCard.tsx
+import { ClientWithSubscription } from '@/types/type';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ClientWithSubscription } from '../services/businessLogic';
 
 interface MemberCardProps {
     member: ClientWithSubscription;

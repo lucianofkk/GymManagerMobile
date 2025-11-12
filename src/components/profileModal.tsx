@@ -1,7 +1,9 @@
 // src/components/profileModal.tsx
+import { ClientWithSubscription } from '@/types/type';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { ClientWithSubscription, getClientWithSubscription } from '../services/businessLogic';
+import { getClientWithSubscription } from '../services/businessLogic';
 import { styles } from '../styles/profileModalStyles';
 import { AssignPlanModal } from './assignPlanModal';
 import { RegisterPaymentModal } from './registerPaymentModal';
@@ -21,13 +23,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [showAssignPlan, setShowAssignPlan] = useState(false);
   const [showRegisterPayment, setShowRegisterPayment] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   // Actualizar member cuando cambia initialMember
   useEffect(() => {
     setMember(initialMember);
   }, [initialMember]);
 
-  // 🔄 Recargar datos del cliente
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: Recargar datos del cliente desde BD
+  // ═══════════════════════════════════════════════════════════════════════
   const reloadMemberData = async () => {
     if (!member?.id) return;
     
@@ -36,46 +41,60 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       const updatedMember = await getClientWithSubscription(member.id);
       setMember(updatedMember);
     } catch (error) {
-      console.error('Error reloading member:', error);
+      console.error('❌ Error reloading member:', error);
     } finally {
       setRefreshing(false);
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: Ir a pantalla de edición
+  // ═══════════════════════════════════════════════════════════════════════
+  const handleEditProfile = () => {
+    if (!member?.id) return;
+    onClose();
+    router.push({
+      pathname: '/(clients)/editMember',
+      params: { clientId: member.id }
+    });
+  };
+
   if (!member) return null;
 
-  // 🎨 Determinar el estado de la cuota
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: Determinar el estado de la suscripción
+  // Retorna objeto con texto y colores para UI
+  // ═══════════════════════════════════════════════════════════════════════
   const getPaymentStatus = () => {
     if (!member.subscription) {
       return { text: 'SIN PLAN', color: '#92400E', bgColor: '#FEF3C7' };
     }
 
     const days = member.daysUntilExpiration || 0;
+    
+    // Vencido
     if (days < 0) {
       return { text: 'VENCIDA', color: '#991B1B', bgColor: '#FEE2E2' };
     }
+    
+    // Por vencer (últimos 7 días)
     if (days <= 7) {
       return { text: 'POR VENCER', color: '#92400E', bgColor: '#FEF3C7' };
     }
+    
+    // Pagada
     if (member.subscription.paymentStatus === 'paid') {
       return { text: 'PAGADA', color: '#065F46', bgColor: '#D1FAE5' };
     }
+    
+    // Pendiente
     return { text: 'PENDIENTE', color: '#92400E', bgColor: '#FEF3C7' };
   };
 
   const paymentStatus = getPaymentStatus();
-
-  // 📝 Determinar qué botones mostrar
   const hasSubscription = !!member.subscription;
   const isExpired = (member.daysUntilExpiration || 0) < 0;
   const isExpiringSoon = (member.daysUntilExpiration || 0) <= 7 && (member.daysUntilExpiration || 0) >= 0;
-
-  // ✅ Handler para cerrar modal hijo y refrescar
-  const handleCloseChildModal = () => {
-    setShowAssignPlan(false);
-    setShowRegisterPayment(false);
-    onClose(); // Cierra el ProfileModal y refresca la lista
-  };
 
   return (
     <>
@@ -87,7 +106,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            {/* Header con botón cerrar */}
+            {/* HEADER: Cerrar modal */}
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>✕</Text>
@@ -96,7 +115,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.modalContent}>
-                {/* Sección de perfil */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* SECCIÓN: Información del cliente */}
+                {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.profileSection}>
                   <View style={styles.modalAvatarContainer}>
                     <View style={styles.modalAvatar}>
@@ -114,7 +135,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       {member.phoneNumber ? `📱 ${member.phoneNumber}` : '📱 Sin teléfono'}
                     </Text>
                     
-                    {/* Info del plan actual */}
+                    {/* Plan actual */}
                     {member.currentPlan ? (
                       <View style={styles.planInfoContainer}>
                         <Text style={styles.memberPlanInfo}>
@@ -128,9 +149,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <Text style={styles.noPlanText}>⚠️ Sin plan asignado</Text>
                     )}
 
-                    {/* Estado de la cuota */}
+                    {/* ═══════════════════════════════════════════════════ */}
+                    {/* Estado de la suscripción */}
+                    {/* ═══════════════════════════════════════════════════ */}
                     <View style={styles.quotaContainerModal}>
-                      <Text style={styles.quotaLabelModal}>ESTADO</Text>
+                      <Text style={styles.quotaLabelModal}>ESTADO SUSCRIPCIÓN</Text>
                       <View
                         style={[
                           styles.statusBadgeModal,
@@ -148,7 +171,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       </View>
                     </View>
 
-                    {/* Info de vencimiento */}
+                    {/* Días hasta vencimiento */}
                     {member.daysUntilExpiration !== undefined && member.subscription && (
                       <Text style={styles.expirationInfo}>
                         {member.daysUntilExpiration < 0
@@ -161,9 +184,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   </View>
                 </View>
 
-                {/* Botones de acción */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* BOTÓN: Editar perfil */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.editButton]}
+                  onPress={handleEditProfile}
+                >
+                  <Text style={styles.actionButtonText}>✏️ Editar Perfil</Text>
+                </TouchableOpacity>
+
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* BOTONES: Acciones de suscripción */}
+                {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.actionsContainer}>
-                  {/* Si NO tiene suscripción */}
                   {!hasSubscription && (
                     <TouchableOpacity
                       style={[styles.actionButton, styles.primaryButton]}
@@ -173,10 +207,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </TouchableOpacity>
                   )}
 
-                  {/* Si tiene suscripción */}
                   {hasSubscription && (
                     <>
-                      {/* Botón Registrar Pago */}
                       {member.subscription?.paymentStatus !== 'paid' && (
                         <TouchableOpacity
                           style={[styles.actionButton, styles.successButton]}
@@ -186,7 +218,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         </TouchableOpacity>
                       )}
 
-                      {/* Botón Renovar Plan (si está vencido o por vencer) */}
                       {(isExpired || isExpiringSoon) && (
                         <TouchableOpacity
                           style={[styles.actionButton, styles.warningButton]}
@@ -199,19 +230,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   )}
                 </View>
 
-                {/* Info adicional */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* SECCIÓN: Información detallada */}
+                {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.infoSection}>
                   <Text style={styles.infoTitle}>📋 Información</Text>
+                  
+                  {/* Estado del cliente */}
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Estado Cliente:</Text>
+                    <Text style={styles.infoValue}>
+                      {member.isActive ? '✅ Activo' : '❌ Inactivo (Dado de baja)'}
+                    </Text>
+                  </View>
+                  
+                  {/* Género */}
                   <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Género:</Text>
                     <Text style={styles.infoValue}>{member.gender}</Text>
                   </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Estado:</Text>
-                    <Text style={styles.infoValue}>
-                      {member.isActive ? '✅ Activo' : '❌ Inactivo'}
-                    </Text>
-                  </View>
+                  
+                  {/* Fechas de suscripción */}
                   {member.subscription && (
                     <>
                       <View style={styles.infoRow}>
@@ -242,7 +281,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         clientName={`${member.firstName} ${member.lastName}`}
         isRenewal={hasSubscription}
         onClose={() => setShowAssignPlan(false)}
-        onSuccess={handleCloseChildModal}
+        onSuccess={() => {
+          setShowAssignPlan(false);
+          onClose();
+        }}
       />
 
       {/* Modal para registrar pago */}
@@ -253,7 +295,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         subscriptionId={member.subscription?.id || ''}
         planPrice={member.currentPlan?.price || 0}
         onClose={() => setShowRegisterPayment(false)}
-        onSuccess={handleCloseChildModal}
+        onSuccess={() => {
+          setShowRegisterPayment(false);
+          onClose();
+        }}
       />
     </>
   );

@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { MembershipPlan } from '../services/membershipPlansService';
-import { getMembershipPlans } from '../services/membershipPlansService';
+import { getAllMembershipPlans } from '../services/membershipPlansService';
 import { createSubscription } from '../services/subscriptionsService';
 
 interface AssignPlanModalProps {
@@ -39,6 +39,8 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   // Cargar planes cuando se abre el modal
   useEffect(() => {
     if (visible) {
+      setPlans([]); // Limpiar primero
+      setSelectedPlan(null);
       loadPlans();
     }
   }, [visible]);
@@ -47,10 +49,32 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   const loadPlans = async () => {
     try {
       setLoading(true);
-      const data = await getMembershipPlans();
-      setPlans(data);
+      console.log('🔄 Iniciando carga de planes...');
+      
+      // Usar getAllMembershipPlans() para evitar problemas de índice
+      const allPlans = await getAllMembershipPlans();
+      console.log('📦 Todos los planes recibidos:', allPlans.length);
+      console.log('📦 Primer plan:', JSON.stringify(allPlans[0], null, 2));
+      
+      // Filtrar solo los activos y ordenar manualmente
+      const activePlans = allPlans
+        .filter(plan => {
+          console.log(`Plan "${plan.planName}" - isActive: ${plan.isActive}, id: ${plan.id}`);
+          return plan.isActive;
+        })
+        .sort((a, b) => a.price - b.price);
+      
+      console.log('📋 Planes activos cargados:', activePlans.length);
+      console.log('📋 IDs de planes activos:', activePlans.map(p => p.id));
+      
+      setPlans(activePlans);
+      console.log('✅ Estado actualizado con', activePlans.length, 'planes');
+      
+      if (activePlans.length === 0) {
+        console.warn('⚠️ No se encontraron planes activos');
+      }
     } catch (error) {
-      console.error('Error loading plans:', error);
+      console.error('❌ Error loading plans:', error);
       Alert.alert('Error', 'No se pudieron cargar los planes');
     } finally {
       setLoading(false);
@@ -115,6 +139,10 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
 
           {/* Lista de planes */}
           <ScrollView style={styles.plansContainer} showsVerticalScrollIndicator={false}>
+            {(() => {
+              console.log('🎨 Renderizando. Loading:', loading, 'Plans length:', plans.length);
+              return null;
+            })()}
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#1E40AF" />
@@ -203,6 +231,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
     maxHeight: '80%',
+    borderWidth: 1,
+    borderColor: 'red'
   },
   header: {
     flexDirection: 'row',

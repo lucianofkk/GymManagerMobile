@@ -1,4 +1,4 @@
-// src/app/(tabs)/plans.tsx
+// src/app/(tabs)/plansScreen.tsx
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import {
@@ -19,6 +19,11 @@ import {
 } from '../../services/membershipPlansService';
 import { styles } from '../../styles/plansScreenStlye';
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PANTALLA DE PLANES DE MEMBRESÍA
+// Gestión completa de planes: crear, editar, activar, desactivar y eliminar
+// ═══════════════════════════════════════════════════════════════════════════
+
 export default function PlansScreen() {
     const [plans, setPlans] = useState<MembershipPlan[]>([]);
     const [loading, setLoading] = useState(false);
@@ -26,14 +31,18 @@ export default function PlansScreen() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState<MembershipPlan | null>(null);
 
-    // Cargar planes cuando la pantalla se enfoca
+    // ═══════════════════════════════════════════════════════════════
+    // LIFECYCLE: Cargar planes cuando la pantalla se enfoca
+    // ═══════════════════════════════════════════════════════════════
     useFocusEffect(
         useCallback(() => {
             loadPlans();
         }, [])
     );
 
-    // 📋 Cargar todos los planes (incluyendo inactivos)
+    // ═══════════════════════════════════════════════════════════════
+    // CARGAR PLANES: Obtiene todos los planes (activos e inactivos)
+    // ═══════════════════════════════════════════════════════════════
     const loadPlans = async () => {
         try {
             setLoading(true);
@@ -47,66 +56,78 @@ export default function PlansScreen() {
         }
     };
 
-    // 🔄 Refrescar
+    // ═══════════════════════════════════════════════════════════════
+    // REFRESCAR: Pull-to-refresh para actualizar lista
+    // ═══════════════════════════════════════════════════════════════
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await loadPlans();
         setRefreshing(false);
     }, []);
 
-    // ✏️ Editar plan
+    // ═══════════════════════════════════════════════════════════════
+    // EDITAR PLAN: Abre modal para editar plan existente
+    // ═══════════════════════════════════════════════════════════════
     const handleEdit = (plan: MembershipPlan) => {
         setEditingPlan(plan);
         setShowCreateModal(true);
     };
 
-    // 🗑️ Eliminar plan definitivamente (solo para inactivos)
-const handleDelete = async (plan: MembershipPlan) => {
-    Alert.alert(
-        "Eliminar plan definitivamente",
-        `¿Seguro que querés eliminar el plan "${plan.planName}" para siempre?`,
-        [
-            { text: "Cancelar", style: "cancel" },
-            {
-                text: "Eliminar",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        // 🔹 Borrado definitivo
-                        await permanentlyDeleteMembershipPlan(plan.id!);
-                        Alert.alert("Listo", "El plan fue eliminado definitivamente.");
-                        await loadPlans();
-                    } catch (error) {
-                        console.error("Error al eliminar plan:", error);
-                        Alert.alert("Error", "No se pudo eliminar el plan.");
-                    }
+    // ═══════════════════════════════════════════════════════════════
+    // ELIMINAR PLAN: Borra permanentemente (solo para inactivos)
+    // ═══════════════════════════════════════════════════════════════
+    const handleDelete = async (plan: MembershipPlan) => {
+        Alert.alert(
+            "Eliminar plan definitivamente",
+            `¿Seguro que querés eliminar "${plan.planName}" para siempre?`,
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await permanentlyDeleteMembershipPlan(plan.id!);
+                            Alert.alert("Listo", "El plan fue eliminado definitivamente.");
+                            await loadPlans();
+                        } catch (error) {
+                            console.error("Error al eliminar plan:", error);
+                            Alert.alert("Error", "No se pudo eliminar el plan.");
+                        }
+                    },
                 },
-            },
-        ]
-    );
-};
+            ]
+        );
+    };
 
-
-    // ➕ Abrir modal para crear nuevo
+    // ═══════════════════════════════════════════════════════════════
+    // CREAR NUEVO: Abre modal sin plan seleccionado (create mode)
+    // ═══════════════════════════════════════════════════════════════
     const handleCreate = () => {
         setEditingPlan(null);
         setShowCreateModal(true);
     };
 
-    // ✅ Cerrar modal y recargar
+    // ═══════════════════════════════════════════════════════════════
+    // CERRAR MODAL: Cierra modal y recarga lista de planes
+    // ═══════════════════════════════════════════════════════════════
     const handleModalClose = () => {
         setShowCreateModal(false);
         setEditingPlan(null);
         loadPlans();
     };
 
-    // Separar planes activos e inactivos
+    // ═══════════════════════════════════════════════════════════════
+    // SEPARAR PLANES: Divide activos e inactivos para mostrar
+    // ═══════════════════════════════════════════════════════════════
     const activePlans = plans.filter((p) => p.isActive);
     const inactivePlans = plans.filter((p) => !p.isActive);
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Header */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* HEADER - Título y resumen */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <View style={styles.header}>
                 <View>
                     <Text style={styles.headerTitle}>Planes de Membresía</Text>
@@ -116,7 +137,9 @@ const handleDelete = async (plan: MembershipPlan) => {
                 </View>
             </View>
 
-            {/* Lista de planes */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* CONTENIDO PRINCIPAL */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <ScrollView
                 style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
@@ -125,6 +148,9 @@ const handleDelete = async (plan: MembershipPlan) => {
                 }
             >
                 <View style={styles.content}>
+                    {/* ═══════════════════════════════════════════════════════════════ */}
+                    {/* ESTADO: CARGANDO */}
+                    {/* ═══════════════════════════════════════════════════════════════ */}
                     {loading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#1E40AF" />
@@ -132,35 +158,54 @@ const handleDelete = async (plan: MembershipPlan) => {
                         </View>
                     ) : plans.length > 0 ? (
                         <>
-                            {/* Planes Activos */}
+                            {/* ═══════════════════════════════════════════════════════════════ */}
+                            {/* SECCIÓN: PLANES ACTIVOS */}
+                            {/* ═══════════════════════════════════════════════════════════════ */}
                             {activePlans.length > 0 && (
                                 <>
                                     <Text style={styles.sectionTitle}>✅ Planes Activos</Text>
                                     {activePlans.map((plan) => (
                                         <View key={plan.id} style={styles.planCard}>
+                                            {/* Header del plan: Nombre y Precio */}
                                             <View style={styles.planHeader}>
                                                 <View style={styles.planHeaderLeft}>
-                                                    <Text style={styles.planName}>{plan.planName}</Text>
+                                                    <Text style={styles.planName}>
+                                                        {plan.planName}
+                                                    </Text>
                                                     <View style={styles.activeBadge}>
-                                                        <Text style={styles.activeBadgeText}>ACTIVO</Text>
+                                                        <Text style={styles.activeBadgeText}>
+                                                            ACTIVO
+                                                        </Text>
                                                     </View>
                                                 </View>
-                                                <Text style={styles.planPrice}>${plan.price}</Text>
+                                                <Text style={styles.planPrice}>
+                                                    ${plan.price}
+                                                </Text>
                                             </View>
 
-                                            <Text style={styles.planDescription}>{plan.description}</Text>
+                                            {/* Descripción del plan */}
+                                            <Text style={styles.planDescription}>
+                                                {plan.description}
+                                            </Text>
 
+                                            {/* Footer: Duración y botones */}
                                             <View style={styles.planFooter}>
                                                 <View style={styles.planDurationContainer}>
-                                                    <Text style={styles.planDurationLabel}>Duración:</Text>
-                                                    <Text style={styles.planDuration}>{plan.duration} días</Text>
+                                                    <Text style={styles.planDurationLabel}>
+                                                        Duración:
+                                                    </Text>
+                                                    <Text style={styles.planDuration}>
+                                                        {plan.duration} días
+                                                    </Text>
                                                 </View>
 
                                                 <TouchableOpacity
                                                     style={styles.editButton}
                                                     onPress={() => handleEdit(plan)}
                                                 >
-                                                    <Text style={styles.editButtonText}>✏️ Editar</Text>
+                                                    <Text style={styles.editButtonText}>
+                                                        ✏️ Editar
+                                                    </Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -168,42 +213,69 @@ const handleDelete = async (plan: MembershipPlan) => {
                                 </>
                             )}
 
-                            {/* Planes Inactivos */}
+                            {/* ═══════════════════════════════════════════════════════════════ */}
+                            {/* SECCIÓN: PLANES INACTIVOS */}
+                            {/* ═══════════════════════════════════════════════════════════════ */}
                             {inactivePlans.length > 0 && (
                                 <>
-                                    <Text style={[styles.sectionTitle, { marginTop: 24 }]}>❌ Planes Inactivos</Text>
+                                    <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
+                                        ❌ Planes Inactivos
+                                    </Text>
                                     {inactivePlans.map((plan) => (
-                                        <View key={plan.id} style={[styles.planCard, styles.planCardInactive]}>
+                                        <View
+                                            key={plan.id}
+                                            style={[styles.planCard, styles.planCardInactive]}
+                                        >
+                                            {/* Header del plan: Nombre y Precio */}
                                             <View style={styles.planHeader}>
                                                 <View style={styles.planHeaderLeft}>
-                                                    <Text style={styles.planName}>{plan.planName}</Text>
+                                                    <Text style={styles.planName}>
+                                                        {plan.planName}
+                                                    </Text>
                                                     <View style={styles.inactiveBadge}>
-                                                        <Text style={styles.inactiveBadgeText}>INACTIVO</Text>
+                                                        <Text style={styles.inactiveBadgeText}>
+                                                            INACTIVO
+                                                        </Text>
                                                     </View>
                                                 </View>
-                                                <Text style={styles.planPrice}>${plan.price}</Text>
+                                                <Text style={styles.planPrice}>
+                                                    ${plan.price}
+                                                </Text>
                                             </View>
 
-                                            <Text style={styles.planDescription}>{plan.description}</Text>
+                                            {/* Descripción del plan */}
+                                            <Text style={styles.planDescription}>
+                                                {plan.description}
+                                            </Text>
 
+                                            {/* Footer: Duración y botones */}
                                             <View style={styles.planFooter}>
                                                 <View style={styles.planDurationContainer}>
-                                                    <Text style={styles.planDurationLabel}>Duración:</Text>
-                                                    <Text style={styles.planDuration}>{plan.duration} días</Text>
+                                                    <Text style={styles.planDurationLabel}>
+                                                        Duración:
+                                                    </Text>
+                                                    <Text style={styles.planDuration}>
+                                                        {plan.duration} días
+                                                    </Text>
                                                 </View>
 
+                                                {/* Botones: Reactivar y Eliminar */}
                                                 <View style={styles.planActions}>
                                                     <TouchableOpacity
                                                         style={styles.editButton}
                                                         onPress={() => handleEdit(plan)}
                                                     >
-                                                        <Text style={styles.editButtonText}>✏️ Reactivar</Text>
+                                                        <Text style={styles.editButtonText}>
+                                                            ✏️ Reactivar
+                                                        </Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         style={styles.deleteButton}
                                                         onPress={() => handleDelete(plan)}
                                                     >
-                                                        <Text style={styles.deleteButtonText}>🗑️</Text>
+                                                        <Text style={styles.deleteButtonText}>
+                                                            🗑️
+                                                        </Text>
                                                     </TouchableOpacity>
                                                 </View>
                                             </View>
@@ -213,27 +285,45 @@ const handleDelete = async (plan: MembershipPlan) => {
                             )}
                         </>
                     ) : (
+                        /* ═══════════════════════════════════════════════════════════════ */
+                        /* ESTADO: VACÍO - Sin planes registrados */
+                        /* ═══════════════════════════════════════════════════════════════ */
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyStateIcon}>📋</Text>
-                            <Text style={styles.emptyStateText}>No hay planes registrados</Text>
-                            <Text style={styles.emptyStateSubtext}>Crea tu primer plan de membresía</Text>
+                            <Text style={styles.emptyStateText}>
+                                No hay planes registrados
+                            </Text>
+                            <Text style={styles.emptyStateSubtext}>
+                                Crea tu primer plan de membresía
+                            </Text>
                             <TouchableOpacity
                                 style={styles.emptyStateButton}
                                 onPress={handleCreate}
                             >
-                                <Text style={styles.emptyStateButtonText}>➕ Crear Plan</Text>
+                                <Text style={styles.emptyStateButtonText}>
+                                    ➕ Crear Plan
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     )}
                 </View>
             </ScrollView>
 
-            {/* Botón flotante para agregar (abajo izquierda) */}
-            <TouchableOpacity style={[styles.fab, { left: 20, right: undefined }]} onPress={handleCreate}>
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* BOTÓN FLOTANTE - Crear nuevo plan */}
+            {/* Posicionado en la zona segura (bottom + tab bar offset) */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={handleCreate}
+                activeOpacity={0.8}
+            >
                 <Text style={styles.fabText}>➕</Text>
             </TouchableOpacity>
 
-            {/* Modal crear/editar */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* MODAL - Crear/Editar plan */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
             <CreatePlanModal
                 visible={showCreateModal}
                 plan={editingPlan}
