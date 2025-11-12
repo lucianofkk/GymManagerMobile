@@ -13,7 +13,8 @@ import {
   View,
 } from 'react-native';
 // 🔥 IMPORT SERVICIOS DE FIREBASE
-import { ClientWithSubscription, getClientsWithSubscription } from '../../services/businessLogic';
+import { ClientWithSubscription } from '@/types/type'; // Import
+import { getClientsWithSubscription } from '../../services/businessLogic';
 import { addClient } from '../../services/clientService';
 
 export default function NewClientScreen() {
@@ -333,8 +334,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 10,
     color: '#111827',
+    marginTop: 20,
   },
   subtitle: {
     fontSize: 14,

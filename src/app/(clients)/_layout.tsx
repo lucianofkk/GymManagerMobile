@@ -1,16 +1,21 @@
-    import { Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 
-    export default function ClientsLayout() {
-    return (
-        <Stack>
-        <Stack.Screen 
-            name="membersList"  // ← Asegúrate que coincida con el nombre del archivo
-            options={{ title: 'Lista de Miembros' }} 
-        />
-        <Stack.Screen 
-            name="newMember"    // ← Y este también
-            options={{ title: 'Nuevo Miembro' }} 
-        />
-        </Stack>
-    );
-    }
+export default function ClientsLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen 
+        name="membersList" 
+        options={{ title: 'Miembros' }} 
+      />
+      <Stack.Screen 
+        name="newMember" 
+        options={{ title: 'Nuevo Miembro' }} 
+      />
+      {/* AGREGAR ESTA LÍNEA */}
+      <Stack.Screen 
+        name="editMember" 
+        options={{ title: 'Editar Miembro' }} 
+      />
+    </Stack>
+  );
+}
