@@ -1,3 +1,4 @@
+// src/styles/aboutScreenStyles.ts
 import { Dimensions, StyleSheet } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -5,7 +6,7 @@ const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: '#F9FAFB', // Fondo blanco/gris claro de la app
     },
     content: {
         flexGrow: 1,
@@ -24,12 +25,12 @@ export const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#007AFF',
+        shadowColor: '#1E40AF', // Sombra azul (color primario)
         shadowOffset: {
             width: 0,
             height: 8,
         },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.15,
         shadowRadius: 16,
         elevation: 8,
         borderWidth: 3,
@@ -45,14 +46,14 @@ export const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#007AFF',
-        opacity: 0.1,
+        backgroundColor: '#1E40AF', // Color azul primario
+        opacity: 0.08,
         zIndex: -1,
     },
     title: {
         fontSize: 32,
         fontWeight: '800',
-        color: '#1A1A1A',
+        color: '#111827',
         textAlign: 'center',
         marginBottom: 8,
         letterSpacing: -0.5,
@@ -60,12 +61,12 @@ export const styles = StyleSheet.create({
     subtitle: {
         fontSize: 16,
         fontWeight: '500',
-        color: '#666',
+        color: '#6B7280',
         textAlign: 'center',
         marginBottom: 16,
     },
     versionBadge: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#1E40AF', // Azul primario
         paddingHorizontal: 12,
         paddingVertical: 4,
         borderRadius: 12,
@@ -78,20 +79,20 @@ export const styles = StyleSheet.create({
     },
     infoCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 16,
         padding: 24,
         marginVertical: 20,
         width: width - 48,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 2,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 4,
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: '#E5E7EB',
     },
     infoHeader: {
         flexDirection: 'row',
@@ -101,7 +102,7 @@ export const styles = StyleSheet.create({
     infoTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#1A1A1A',
+        color: '#111827',
         marginLeft: 8,
     },
     infoContent: {
@@ -115,21 +116,21 @@ export const styles = StyleSheet.create({
     infoLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#666',
+        color: '#6B7280',
         minWidth: 90,
     },
     infoValue: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#1A1A1A',
+        color: '#111827',
         flex: 1,
     },
     githubButton: {
-        backgroundColor: '#1A1A1A',
-        borderRadius: 16,
+        backgroundColor: '#1A1A1A', // Negro para contrastar
+        borderRadius: 12,
         paddingVertical: 16,
         paddingHorizontal: 24,
-        marginVertical: 20,
+        marginVertical: 16,
         width: width - 48,
         flexDirection: 'row',
         alignItems: 'center',
@@ -139,9 +140,9 @@ export const styles = StyleSheet.create({
             width: 0,
             height: 4,
         },
-        shadowOpacity: 0.3,
+        shadowOpacity: 0.15,
         shadowRadius: 8,
-        elevation: 6,
+        elevation: 4,
     },
     githubButtonContent: {
         flexDirection: 'row',
@@ -158,32 +159,32 @@ export const styles = StyleSheet.create({
     },
     descriptionCard: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 16,
         padding: 24,
-        marginVertical: 10,
+        marginVertical: 16,
         width: width - 48,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
             height: 2,
         },
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 2,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
+        borderColor: '#E5E7EB',
     },
     descriptionTitle: {
         fontSize: 20,
         fontWeight: '700',
-        color: '#1A1A1A',
+        color: '#111827',
         marginBottom: 12,
         textAlign: 'center',
     },
     descriptionText: {
         fontSize: 14,
         fontWeight: '400',
-        color: '#666',
+        color: '#6B7280',
         lineHeight: 22,
         textAlign: 'center',
         marginBottom: 20,
@@ -195,29 +196,61 @@ export const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     techPill: {
-        backgroundColor: '#F1F5F9',
+        backgroundColor: '#EFF6FF', // Azul muy claro
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: '#BFDBFE', // Azul medio
     },
     techText: {
         fontSize: 12,
         fontWeight: '600',
-        color: '#475569',
+        color: '#1E40AF', // Azul primario
     },
     footer: {
-        marginTop: 32,
+        marginTop: 24,
         paddingTop: 20,
         borderTopWidth: 1,
-        borderTopColor: '#E2E8F0',
+        borderTopColor: '#E5E7EB',
         width: '100%',
     },
     footerText: {
         fontSize: 14,
         fontWeight: '500',
-        color: '#94A3B8',
+        color: '#9CA3AF',
         textAlign: 'center',
+    },
+
+    // ========== ESTILOS DEL BOTÓN LOGOUT ========== 
+    // Nuevos estilos para el botón de cerrar sesión
+    logoutButton: {
+        backgroundColor: '#EF4444', // Rojo para indicar acción peligrosa
+        borderRadius: 12,
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        marginTop: 24,
+        marginBottom: 12,
+        width: width - 48,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#EF4444',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    logoutButtonDisabled: {
+        backgroundColor: '#FECACA', // Rojo claro cuando está deshabilitado
+        opacity: 0.7,
+    },
+    logoutButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });

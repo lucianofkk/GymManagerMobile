@@ -1,8 +1,9 @@
+// src/app/(tabs)/about.tsx
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { router } from 'expo-router';
+import React, { useState } from 'react';
 import {
-    Animated,
-    Easing,
+    Alert,
     Image,
     Linking,
     SafeAreaView,
@@ -15,42 +16,55 @@ import LogoPNG from '../../assets/images/LogoPNG.png';
 import { styles } from '../../styles/aboutScreenStyles';
 
 export default function AboutScreen() {
-    const scaleValue = new Animated.Value(0);
-    const fadeValue = new Animated.Value(0);
-
-    React.useEffect(() => {
-        // Animación de entrada
-        Animated.parallel([
-            Animated.timing(scaleValue, {
-                toValue: 1,
-                duration: 800,
-                easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-                useNativeDriver: true,
-            }),
-            Animated.timing(fadeValue, {
-                toValue: 1,
-                duration: 600,
-                easing: Easing.ease,
-                useNativeDriver: true,
-            }),
-        ]).start();
-    }, []);
+    // Estado para manejar el loading del logout
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const openLink = (url: string) => Linking.openURL(url);
 
     const handleGitHubPress = () => {
-        Animated.sequence([
-            Animated.timing(scaleValue, {
-                toValue: 0.95,
-                duration: 100,
-                useNativeDriver: true,
-            }),
-            Animated.timing(scaleValue, {
-                toValue: 1,
-                duration: 100,
-                useNativeDriver: true,
-            }),
-        ]).start(() => openLink('https://github.com/lucianofkk/GymManagerMobile'));
+        openLink('https://github.com/lucianofkk/GymManagerMobile');
+    };
+
+    // Función para cerrar sesión
+    const handleLogout = async () => {
+        // Mostrar confirmación antes de cerrar sesión
+        Alert.alert(
+            'Cerrar Sesión',
+            '¿Estás seguro de que deseas cerrar sesión?',
+            [
+                {
+                    text: 'Cancelar',
+                    onPress: () => console.log('Logout cancelado'),
+                    style: 'cancel',
+                },
+                {
+                    text: 'Cerrar Sesión',
+                    onPress: async () => {
+                        try {
+                            setIsLoggingOut(true);
+                            
+                            // TODO: Implementar logout con Firebase
+                            // const auth = getAuth();
+                            // await signOut(auth);
+                            
+                            // Simular delay de logout
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            
+                            console.log('✅ Sesión cerrada correctamente');
+                            
+                            // Redirigir al login
+                            router.replace('/(auth)/login');
+                        } catch (error) {
+                            console.error('❌ Error al cerrar sesión:', error);
+                            Alert.alert('Error', 'No se pudo cerrar la sesión. Intenta de nuevo.');
+                        } finally {
+                            setIsLoggingOut(false);
+                        }
+                    },
+                    style: 'destructive',
+                },
+            ]
+        );
     };
 
     return (
@@ -59,16 +73,8 @@ export default function AboutScreen() {
                 contentContainerStyle={styles.content}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header con logo animado */}
-                <Animated.View 
-                    style={[
-                        styles.avatarContainer,
-                        {
-                            opacity: fadeValue,
-                            transform: [{ scale: scaleValue }]
-                        }
-                    ]}
-                >
+                {/* Header con logo - SIN ANIMACIONES */}
+                <View style={styles.avatarContainer}>
                     <View style={styles.avatar}>
                         <Image 
                             source={LogoPNG} 
@@ -77,10 +83,10 @@ export default function AboutScreen() {
                         />
                         <View style={styles.logoGlow} />
                     </View>
-                </Animated.View>
+                </View>
 
-                {/* Título principal */}
-                <Animated.View style={{ opacity: fadeValue }}>
+                {/* Título principal - SIN ANIMACIONES */}
+                <View>
                     <Text style={styles.title}>Gym Manager</Text>
                     <Text style={styles.subtitle}>
                         Solución integral para gestión de gimnasios
@@ -90,63 +96,51 @@ export default function AboutScreen() {
                     <View style={styles.versionBadge}>
                         <Text style={styles.versionText}>v1.0.0</Text>
                     </View>
-                </Animated.View>
+                </View>
 
-                {/* Tarjeta de información */}
-                <Animated.View 
-                    style={[
-                        styles.infoCard,
-                        { opacity: fadeValue }
-                    ]}
-                >
+                {/* Tarjeta de información - SIN ANIMACIONES */}
+                <View style={styles.infoCard}>
                     <View style={styles.infoHeader}>
-                        <Ionicons name="information-circle" size={24} color="#007AFF" />
+                        <Ionicons name="information-circle" size={24} color="#1E40AF" />
                         <Text style={styles.infoTitle}>Información de la App</Text>
                     </View>
                     
                     <View style={styles.infoContent}>
                         <View style={styles.infoRow}>
-                            <Ionicons name="person" size={18} color="#666" />
+                            <Ionicons name="person" size={18} color="#6B7280" />
                             <Text style={styles.infoLabel}>Desarrollador:</Text>
                             <Text style={styles.infoValue}>FRIAS-KLEIN, Luciano</Text>
                         </View>
                         
                         <View style={styles.infoRow}>
-                            <Ionicons name="calendar" size={18} color="#666" />
+                            <Ionicons name="calendar" size={18} color="#6B7280" />
                             <Text style={styles.infoLabel}>Año:</Text>
                             <Text style={styles.infoValue}>2025</Text>
                         </View>
                         
                         <View style={styles.infoRow}>
-                            <Ionicons name="shield-checkmark" size={18} color="#666" />
+                            <Ionicons name="shield-checkmark" size={18} color="#6B7280" />
                             <Text style={styles.infoLabel}>Licencia:</Text>
                             <Text style={styles.infoValue}>Todos los derechos reservados</Text>
                         </View>
                     </View>
-                </Animated.View>
+                </View>
 
-                {/* Botón GitHub mejorado */}
-                <Animated.View style={{ opacity: fadeValue }}>
-                    <TouchableOpacity
-                        style={styles.githubButton}
-                        onPress={handleGitHubPress}
-                        activeOpacity={0.8}
-                    >
-                        <View style={styles.githubButtonContent}>
-                            <Ionicons name="logo-github" size={24} color="#FFFFFF" />
-                            <Text style={styles.githubButtonText}>Ver Código en GitHub</Text>
-                        </View>
-                        <Ionicons name="open-outline" size={18} color="#FFFFFF" style={styles.externalIcon} />
-                    </TouchableOpacity>
-                </Animated.View>
-
-                {/* Descripción en tarjeta */}
-                <Animated.View 
-                    style={[
-                        styles.descriptionCard,
-                        { opacity: fadeValue }
-                    ]}
+                {/* Botón GitHub - SIN ANIMACIONES */}
+                <TouchableOpacity
+                    style={styles.githubButton}
+                    onPress={handleGitHubPress}
+                    activeOpacity={0.8}
                 >
+                    <View style={styles.githubButtonContent}>
+                        <Ionicons name="logo-github" size={24} color="#FFFFFF" />
+                        <Text style={styles.githubButtonText}>Ver Código en GitHub</Text>
+                    </View>
+                    <Ionicons name="open-outline" size={18} color="#FFFFFF" style={styles.externalIcon} />
+                </TouchableOpacity>
+
+                {/* Descripción en tarjeta - SIN ANIMACIONES */}
+                <View style={styles.descriptionCard}>
                     <Text style={styles.descriptionTitle}>Acerca de la Aplicación</Text>
                     <Text style={styles.descriptionText}>
                         Gym Manager es una solución completa desarrollada con tecnologías modernas 
@@ -165,19 +159,39 @@ export default function AboutScreen() {
                             <Text style={styles.techText}>TypeScript</Text>
                         </View>
                     </View>
-                </Animated.View>
+                </View>
 
                 {/* Footer */}
-                <Animated.View 
-                    style={[
-                        styles.footer,
-                        { opacity: fadeValue }
-                    ]}
-                >
+                <View style={styles.footer}>
                     <Text style={styles.footerText}>
                         Desarrollado con ❤️ para la comunidad fitness
                     </Text>
-                </Animated.View>
+                </View>
+
+                {/* ========== BOTÓN DE CERRAR SESIÓN ========== */}
+                {/* Nuevo botón al final - Estilo rojo para indicar acción peligrosa */}
+                <TouchableOpacity
+                    style={[
+                        styles.logoutButton,
+                        isLoggingOut && styles.logoutButtonDisabled
+                    ]}
+                    onPress={handleLogout}
+                    disabled={isLoggingOut}
+                    activeOpacity={0.8}
+                >
+                    <Ionicons 
+                        name="log-out-outline" 
+                        size={20} 
+                        color="#FFFFFF" 
+                        style={{ marginRight: 8 }}
+                    />
+                    <Text style={styles.logoutButtonText}>
+                        {isLoggingOut ? 'Cerrando sesión...' : 'Cerrar Sesión'}
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Espacio adicional al final para scroll */}
+                <View style={{ height: 24 }} />
             </ScrollView>
         </SafeAreaView>
     );
