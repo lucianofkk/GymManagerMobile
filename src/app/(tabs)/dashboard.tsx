@@ -1,6 +1,15 @@
-// src/app/(tabs)/dashboard.tsx
+// src/app/(tabs)/dashboard.tsx - REFACTORIZADO CON LUCIDE + DATOS REALES
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import {
+    Calendar,
+    Clock,
+    DollarSign,
+    Plus,
+    Sparkles,
+    Users,
+    Users as ViewAllUsers,
+} from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -24,20 +33,30 @@ import { ClientWithSubscription, DashboardStats, RecentActivity } from '../../ty
 
 const { width } = Dimensions.get('window');
 
-// Componente StatsCard
+// ============ MAPEO DE ICONOS LUCIDE ============
+// 📌 MEJOR QUE EMOJIS: Componentes vectoriales personalizables
+const ACTIVITY_ICON_MAP = {
+    payment: DollarSign,
+    new_client: Users,
+    renewal: Users,
+    expiring: Clock,
+};
+
+// ============ COMPONENTE STATS CARD ============
+// 📌 CAMBIO: IconComponent ahora es un componente Lucide en lugar de emoji
 const StatsCard = ({
     title,
     value,
     subtitle,
     color,
-    icon,
+    IconComponent,
     onPress,
 }: {
     title: string;
     value: string | number;
     subtitle: string;
     color: string;
-    icon: string;
+    IconComponent: React.FC<{ size: number; color: string; strokeWidth: number }>;
     onPress?: () => void;
 }) => (
     <TouchableOpacity
@@ -47,7 +66,11 @@ const StatsCard = ({
     >
         <View style={styles.statsContent}>
             <View style={styles.statsHeader}>
-                <Text style={styles.statsIcon}>{icon}</Text>
+                {/* ANTES: <Text style={styles.statsIcon}>{icon}</Text> */}
+                {/* AHORA: Componente Lucide vectorial */}
+                <View style={styles.iconContainer}>
+                    <IconComponent size={24} color={color} strokeWidth={1.5} />
+                </View>
                 <Text style={styles.statsTitle}>{title}</Text>
             </View>
             <Text style={[styles.statsValue, { color }]}>{value}</Text>
@@ -56,15 +79,16 @@ const StatsCard = ({
     </TouchableOpacity>
 );
 
-// Componente QuickAction
+// ============ COMPONENTE QUICK ACTION ============
+// 📌 CAMBIO: IconComponent es un componente Lucide
 const QuickActionButton = ({
     title,
-    icon,
+    IconComponent,
     color,
     onPress,
 }: {
     title: string;
-    icon: string;
+    IconComponent: React.FC<{ size: number; color: string; strokeWidth: number }>;
     color: string;
     onPress: () => void;
 }) => (
@@ -73,27 +97,20 @@ const QuickActionButton = ({
         onPress={onPress}
         activeOpacity={0.8}
     >
-        <Text style={styles.quickActionIcon}>{icon}</Text>
+        {/* ANTES: <Text style={styles.quickActionIcon}>{icon}</Text> */}
+        {/* AHORA: Componente Lucide en blanco */}
+        <View style={styles.quickActionIconContainer}>
+            <IconComponent size={32} color="white" strokeWidth={1.5} />
+        </View>
         <Text style={styles.quickActionText}>{title}</Text>
     </TouchableOpacity>
 );
 
-// Componente ActivityItem
+// ============ COMPONENTE ACTIVITY ITEM ============
+// 📌 CAMBIO PRINCIPAL: Busca icono en mapeo en lugar de switch
 const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
-    const getActivityIcon = (type: string) => {
-        switch (type) {
-            case 'payment':
-                return '💰';
-            case 'new_client':
-                return '👤';
-            case 'renewal':
-                return '🔄';
-            case 'expiring':
-                return '⏰';
-            default:
-                return '📝';
-        }
-    };
+    // Obtener el componente de icono según el tipo
+    const IconComponent = ACTIVITY_ICON_MAP[activity.type] || Clock;
 
     const getActivityText = (activity: RecentActivity) => {
         switch (activity.type) {
@@ -112,7 +129,11 @@ const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
 
     return (
         <View style={styles.activityItem}>
-            <Text style={styles.activityIcon}>{getActivityIcon(activity.type)}</Text>
+            {/* ANTES: <Text style={styles.activityIcon}>{getActivityIcon(activity.type)}</Text> */}
+            {/* AHORA: Componente Lucide con color primario */}
+            <View style={styles.activityIconContainer}>
+                <IconComponent size={20} color="#1E40AF" strokeWidth={1.5} />
+            </View>
             <View style={styles.activityContent}>
                 <Text style={styles.activityText}>{getActivityText(activity)}</Text>
                 <Text style={styles.activityDate}>{activity.date}</Text>
@@ -145,11 +166,11 @@ const DashboardScreen = () => {
         try {
             setLoading(true);
 
-            // Obtener estadísticas usando businessLogic
+            // ✅ Obtener estadísticas usando businessLogic (TUS SERVICES)
             const dashboardStats = await getDashboardStats();
             setStats(dashboardStats);
 
-            // Obtener datos para actividades recientes
+            // ✅ Obtener datos para actividades recientes (TUS SERVICES)
             const clientsWithSub = await getClientsWithSubscription();
             const payments = await getPayments();
 
@@ -162,13 +183,12 @@ const DashboardScreen = () => {
         }
     };
 
-    // Generar actividades recientes combinando datos de clientes y pagos
+    // ✅ MANTIENE TU LÓGICA: Generar actividades recientes combinando datos
     const generateRecentActivities = (
         clients: ClientWithSubscription[],
         payments: any[]
     ): RecentActivity[] => {
         const activities: RecentActivity[] = [];
-        const today = new Date();
 
         // Pagos recientes (últimos 3)
         payments
@@ -192,13 +212,17 @@ const DashboardScreen = () => {
         clients
             .filter((client) => {
                 if (!client.subscription?.endDate) return false;
-                const daysUntilExpiry = calculateDaysUntilExpiration(client.subscription.endDate);
+                const daysUntilExpiry = calculateDaysUntilExpiration(
+                    client.subscription.endDate
+                );
                 return daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
             })
             .slice(0, 3)
             .forEach((client) => {
                 if (client.subscription?.endDate) {
-                    const daysUntilExpiry = calculateDaysUntilExpiration(client.subscription.endDate);
+                    const daysUntilExpiry = calculateDaysUntilExpiration(
+                        client.subscription.endDate
+                    );
                     activities.push({
                         id: `expiring-${client.id}`,
                         type: 'expiring',
@@ -209,10 +233,10 @@ const DashboardScreen = () => {
                 }
             });
 
-        return activities.slice(0, 5); // Máximo 5 actividades
+        return activities.slice(0, 5);
     };
 
-    // Formatea las fechas de las actividades de forma legible
+    // ✅ MANTIENE TU LÓGICA: Formatear fechas
     const formatDate = (date: Date): string => {
         try {
             const today = new Date();
@@ -245,7 +269,7 @@ const DashboardScreen = () => {
         setRefreshing(false);
     }, []);
 
-    // Manejar acciones rápidas del dashboard
+    // ✅ MANTIENE TU LÓGICA: Manejar acciones rápidas
     const handleQuickAction = (action: string) => {
         switch (action) {
             case 'clients':
@@ -277,7 +301,7 @@ const DashboardScreen = () => {
                 {/* HEADER - Título y fecha */}
                 {/* ═══════════════════════════════════════════════════════════════ */}
                 <View style={styles.header}>
-                    <Text style={styles.welcomeText}>¡Buen día! 👋</Text>
+                    <Text style={styles.welcomeText}>¡Buen día!</Text>
                     <Text style={styles.gymTitle}>Panel de Control</Text>
                     <Text style={styles.dateText}>
                         {new Date().toLocaleDateString('es-AR', {
@@ -308,7 +332,7 @@ const DashboardScreen = () => {
                                 value={stats.activeClients}
                                 subtitle={`de ${stats.totalClients} totales`}
                                 color="#10B981"
-                                icon="👥"
+                                IconComponent={Users}
                                 onPress={() => handleQuickAction('clients')}
                             />
 
@@ -317,7 +341,7 @@ const DashboardScreen = () => {
                                 value={stats.expiringThisWeek}
                                 subtitle="requieren renovación"
                                 color="#F59E0B"
-                                icon="⏰"
+                                IconComponent={Clock}
                                 onPress={() => handleQuickAction('expiring')}
                             />
 
@@ -326,7 +350,7 @@ const DashboardScreen = () => {
                                 value={`$${stats.monthlyIncome.toLocaleString('es-AR')}`}
                                 subtitle="ingresos acumulados"
                                 color="#1E40AF"
-                                icon="💰"
+                                IconComponent={DollarSign}
                             />
 
                             <StatsCard
@@ -334,7 +358,7 @@ const DashboardScreen = () => {
                                 value={stats.newClientsThisMonth}
                                 subtitle="este mes"
                                 color="#8B5CF6"
-                                icon="✨"
+                                IconComponent={Sparkles}
                             />
                         </View>
 
@@ -346,19 +370,19 @@ const DashboardScreen = () => {
                             <View style={styles.quickActionsRow}>
                                 <QuickActionButton
                                     title="Nuevo Cliente"
-                                    icon="➕"
+                                    IconComponent={Plus}
                                     color="#1E40AF"
                                     onPress={() => handleQuickAction('add_client')}
                                 />
                                 <QuickActionButton
                                     title="Ver Clientes"
-                                    icon="👥"
+                                    IconComponent={ViewAllUsers}
                                     color="#10B981"
                                     onPress={() => handleQuickAction('clients')}
                                 />
                                 <QuickActionButton
                                     title="Vencimientos"
-                                    icon="📅"
+                                    IconComponent={Calendar}
                                     color="#F59E0B"
                                     onPress={() => handleQuickAction('expiring')}
                                 />

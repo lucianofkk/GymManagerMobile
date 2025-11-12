@@ -11,7 +11,6 @@ export default function ClientsLayout() {
         name="newMember" 
         options={{ title: 'Nuevo Miembro' }} 
       />
-      {/* AGREGAR ESTA LÍNEA */}
       <Stack.Screen 
         name="editMember" 
         options={{ title: 'Editar Miembro' }} 

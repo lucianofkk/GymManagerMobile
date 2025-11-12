@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
   // ═════════════════════════════════════════════════════════════════════════
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB', // Gris muy claro
+    backgroundColor:'#F0F4F8', // Gris muy claro
   },
 
   scrollContent: {

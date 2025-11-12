@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9FAFB', // Fondo blanco/gris claro de la app
+        backgroundColor: '#e6eff9ff', // Fondo blanco/gris claro de la app
     },
     content: {
         flexGrow: 1,

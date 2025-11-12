@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
   // ═════════════════════════════════════════════════════════════════════════
   container: {
     flex: 1,
-    backgroundColor: '#F0F4F8',
+    backgroundColor: '#e6eff9ff',
   },
 
   // ═════════════════════════════════════════════════════════════════════════

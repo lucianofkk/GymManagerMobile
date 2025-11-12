@@ -7,7 +7,15 @@ export const styles = StyleSheet.create({
     // ═══════════════════════════════════════════════════════════════
     container: {
         flex: 1,
-        backgroundColor: '#F0F4F8',
+        backgroundColor: '#e6eff9ff',
+    },
+    iconContainer: {
+        width: 36,
+        height: 36,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'transparent',
+        borderRadius: 8,
     },
     scrollView: {
         flex: 1,
@@ -130,6 +138,12 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 28,
     },
+    quickActionIconContainer: {
+        width: 50,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     sectionTitle: {
         fontSize: 20,
         fontWeight: '800',
@@ -173,8 +187,16 @@ export const styles = StyleSheet.create({
     // ACTIVIDAD RECIENTE - Contenedor moderno con bordes
     // ═══════════════════════════════════════════════════════════════
     activitiesContainer: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 60,
         paddingBottom: 40,
+    },
+    activityIconContainer: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#EFF6FF',
+        borderRadius: 8,
     },
     activitiesList: {
         backgroundColor: '#FFFFFF',
@@ -252,4 +274,7 @@ export const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '500',
     },
+
+
+    
 });

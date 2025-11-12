@@ -3,18 +3,18 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#e6eff9ff',
   },
 
   // ════════════════════════════════════════════════
   // HEADER
   // ════════════════════════════════════════════════
 header: {
-  paddingTop: 40,
+  paddingTop: 20,
   paddingBottom: 16,
   backgroundColor: '#1E40AF',
-  borderBottomLeftRadius: 20,
-  borderBottomRightRadius: 20,
+  borderBottomLeftRadius: 10,
+  borderBottomRightRadius: 10,
   alignItems: 'center', // 👈 centramos el contenido principal
   justifyContent: 'center',
   position: 'relative', // 👈 permite posicionar el botón atrás dentro
