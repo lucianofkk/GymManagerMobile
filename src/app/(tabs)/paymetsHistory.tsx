@@ -1,4 +1,5 @@
-// src/app/(tabs)/paymetsHistory.tsx
+// src/app/(tabs)/paymetsHistory.tsx - ACTUALIZADO
+
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,68 +12,33 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Client, getClientById } from '../../services/clientService';
-import { deletePayment, getPayments } from '../../services/paymentService';
-import { getSubscriptionById } from '../../services/subscriptionsService';
+import { deletePayment, getPaymentsWithDetails, PaymentWithDetails } from '../../services/paymentService';
 import { styles } from '../../styles/paymetsHistoryStyles';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PANTALLA DE HISTORIAL DE PAGOS
-// Visualización de todos los pagos con integración Firebase
+// PANTALLA DE HISTORIAL DE PAGOS - VERSIÓN MEJORADA
+// Visualización con datos enriquecidos y cacheo optimizado
 // ═══════════════════════════════════════════════════════════════════════════
-
-// Tipos
-interface Payment {
-  id: string;
-  amount: number;
-  paymentDate: string;
-  paymentMethod: string;
-  subscriptionId: string;
-  clientName?: string;
-  planName?: string;
-}
 
 const PaymentHistoryScreen: React.FC = () => {
   // ═══════════════════════════════════════════════════════════════
   // ESTADO LOCAL
   // ═══════════════════════════════════════════════════════════════
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<PaymentWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentWithDetails | null>(null);
 
   // ═══════════════════════════════════════════════════════════════
-  // CARGAR PAGOS: Obtiene pagos y enriquece con datos de cliente
+  // CARGAR PAGOS: Usa la función optimizada con cacheo
+  // 📌 CAMBIO PRINCIPAL: Usar getPaymentsWithDetails() en lugar de getPayments()
   // ═══════════════════════════════════════════════════════════════
   const loadPayments = async () => {
     try {
       setLoading(true);
-      const data = await getPayments();
-
-      // Enriquecer pagos con información de cliente y plan
-      const detailed = await Promise.all(
-        data.map(async (p: any) => {
-          let clientName = 'Desconocido';
-          let planName = 'N/A';
-
-          try {
-            const sub = await getSubscriptionById(p.subscriptionId);
-            if (sub) {
-              const client: Client | null = await getClientById(sub.clientId);
-              clientName = client
-                ? `${client.firstName || ''} ${client.lastName || ''}`.trim()
-                : 'Sin nombre';
-              planName = sub.planId ? String(sub.planId) : 'Sin plan';
-            }
-          } catch (err) {
-            console.error('Error obteniendo cliente o suscripción:', err);
-          }
-
-          return { ...p, clientName, planName };
-        })
-      );
-
-      setPayments(detailed);
+      // ✅ Esta función ya enriquece los datos CON CACHEO optimizado
+      const data = await getPaymentsWithDetails();
+      setPayments(data);
     } catch (err) {
       console.error('Error al cargar pagos:', err);
       Alert.alert('Error', 'No se pudieron cargar los pagos');
@@ -100,15 +66,16 @@ const PaymentHistoryScreen: React.FC = () => {
   // ═══════════════════════════════════════════════════════════════
   // FORMATEAR FECHA: Convierte a formato legible
   // ═══════════════════════════════════════════════════════════════
-  const formatDate = (date: string): string => {
+  const formatDate = (date: Date | string): string => {
     try {
-      return new Date(date).toLocaleDateString('es-AR', {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleDateString('es-AR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
       });
     } catch {
-      return date;
+      return 'N/A';
     }
   };
 
@@ -125,10 +92,10 @@ const PaymentHistoryScreen: React.FC = () => {
   // ═══════════════════════════════════════════════════════════════
   // ELIMINAR PAGO: Borra de Firebase con confirmación
   // ═══════════════════════════════════════════════════════════════
-  const handleDeletePayment = async (payment: Payment) => {
+  const handleDeletePayment = async (payment: PaymentWithDetails) => {
     Alert.alert(
       'Eliminar Pago',
-      `¿Estás seguro de que querés eliminar este pago de $${payment.amount}?`,
+      `¿Estás seguro de que querés eliminar este pago de ${formatAmount(payment.amount)}?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -136,7 +103,7 @@ const PaymentHistoryScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deletePayment(payment.id);
+              await deletePayment(payment.id || '');
               setPayments(payments.filter((p) => p.id !== payment.id));
               setSelectedPayment(null);
               Alert.alert('Listo', 'Pago eliminado correctamente');
@@ -152,8 +119,9 @@ const PaymentHistoryScreen: React.FC = () => {
 
   // ═══════════════════════════════════════════════════════════════
   // RENDERIZAR TARJETA DE PAGO
+  // 📌 CAMBIO: Ahora usa clientName y planName directamente
   // ═══════════════════════════════════════════════════════════════
-  const renderPayment = ({ item }: { item: Payment }) => (
+  const renderPayment = ({ item }: { item: PaymentWithDetails }) => (
     <TouchableOpacity
       style={styles.paymentCard}
       onPress={() => setSelectedPayment(item)}
@@ -163,6 +131,7 @@ const PaymentHistoryScreen: React.FC = () => {
       <View style={styles.cardHeader}>
         <View style={styles.clientInfo}>
           <Text style={styles.clientName}>{item.clientName}</Text>
+          {/* 📌 CAMBIO: Ahora muestra el nombre del plan, no el ID */}
           <Text style={styles.planInfo}>Plan: {item.planName}</Text>
         </View>
         <Text style={styles.amountText}>{formatAmount(item.amount)}</Text>
@@ -208,7 +177,7 @@ const PaymentHistoryScreen: React.FC = () => {
       {/* Lista de Pagos */}
       <FlatList
         data={payments}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id || ''}
         renderItem={renderPayment}
         scrollEnabled={true}
         refreshControl={
@@ -280,9 +249,10 @@ const PaymentHistoryScreen: React.FC = () => {
                 </Text>
               </View>
 
+              {/*CAMBIO PRINCIPAL: AHORA MUESTRA EL NOMBRE DEL PLAN CORRECTAMENTE */}
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Plan</Text>
-                <Text style={styles.detailValue}>
+                <Text style={[styles.detailValue, { color: '#000000ff', fontWeight: '600' }]}>
                   {selectedPayment?.planName || 'N/A'}
                 </Text>
               </View>
