@@ -1,6 +1,19 @@
-// src/components/profileModal.tsx
+// src/components/profileModal.tsx - CON LUCIDE ICONS
 import { ClientWithSubscription } from '@/types/type';
 import { useRouter } from 'expo-router';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  Edit,
+  Phone,
+  Plus,
+  RefreshCw,
+  User,
+  X
+} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { getClientWithSubscription } from '../services/businessLogic';
@@ -9,10 +22,45 @@ import { AssignPlanModal } from './assignPlanModal';
 import { RegisterPaymentModal } from './registerPaymentModal';
 
 interface ProfileModalProps {
-  member: ClientWithSubscription | null; 
+  member: ClientWithSubscription | null;
   isVisible: boolean;
   onClose: () => void;
 }
+
+// 📌 MAPEO DE ICONOS LUCIDE
+const IconComponents = {
+  close: X,
+  user: User,
+  phone: Phone,
+  dumbbell: User, // Usamos User como placeholder para "gym"
+  alert: AlertCircle,
+  calendar: Calendar,
+  edit: Edit,
+  plus: Plus,
+  refresh: RefreshCw,
+  checkCircle: CheckCircle,
+  dollarSign: DollarSign,
+  clock: Clock,
+};
+
+// 📌 COMPONENTE HELPER: Icono Lucide personalizado
+interface LucideIconProps {
+  Icon: typeof X;
+  size?: number;
+  color?: string;
+  style?: any;
+}
+
+const LucideIcon: React.FC<LucideIconProps> = ({
+  Icon,
+  size = 24,
+  color = '#1E40AF',
+  style,
+}) => (
+  <View style={[{ width: size, height: size }, style]}>
+    <Icon size={size} color={color} strokeWidth={1.5} />
+  </View>
+);
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
   member: initialMember,
@@ -25,17 +73,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  // Actualizar member cuando cambia initialMember
   useEffect(() => {
     setMember(initialMember);
   }, [initialMember]);
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // FUNCIÓN: Recargar datos del cliente desde BD
-  // ═══════════════════════════════════════════════════════════════════════
   const reloadMemberData = async () => {
     if (!member?.id) return;
-    
+
     try {
       setRefreshing(true);
       const updatedMember = await getClientWithSubscription(member.id);
@@ -47,15 +91,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
   };
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // FUNCIÓN: Ir a pantalla de edición
-  // ═══════════════════════════════════════════════════════════════════════
   const handleEditProfile = () => {
     if (!member?.id) return;
     onClose();
     router.push({
       pathname: '/(clients)/editMember',
-      params: { clientId: member.id }
+      params: { clientId: member.id },
     });
   };
 
@@ -63,7 +104,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   // ═══════════════════════════════════════════════════════════════════════
   // FUNCIÓN: Determinar el estado de la suscripción
-  // Retorna objeto con texto y colores para UI
   // ═══════════════════════════════════════════════════════════════════════
   const getPaymentStatus = () => {
     if (!member.subscription) {
@@ -71,23 +111,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
 
     const days = member.daysUntilExpiration || 0;
-    
-    // Vencido
+
     if (days < 0) {
       return { text: 'VENCIDA', color: '#991B1B', bgColor: '#FEE2E2' };
     }
-    
-    // Por vencer (últimos 7 días)
+
     if (days <= 7) {
       return { text: 'POR VENCER', color: '#92400E', bgColor: '#FEF3C7' };
     }
-    
-    // Pagada
+
     if (member.subscription.paymentStatus === 'paid') {
       return { text: 'PAGADA', color: '#065F46', bgColor: '#D1FAE5' };
     }
-    
-    // Pendiente
+
     return { text: 'PENDIENTE', color: '#92400E', bgColor: '#FEF3C7' };
   };
 
@@ -109,7 +145,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             {/* HEADER: Cerrar modal */}
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>✕</Text>
+                <LucideIcon Icon={IconComponents.close} size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
@@ -121,9 +157,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <View style={styles.profileSection}>
                   <View style={styles.modalAvatarContainer}>
                     <View style={styles.modalAvatar}>
-                      <Text style={styles.avatarText}>
-                        {member.gender === 'Masculino' ? '👨' : '👩'}
-                      </Text>
+                      <LucideIcon
+                        Icon={IconComponents.user}
+                        size={40}
+                        color="#1E40AF"
+                      />
                     </View>
                   </View>
 
@@ -131,22 +169,45 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <Text style={styles.memberNameModal}>
                       {member.firstName} {member.lastName}
                     </Text>
-                    <Text style={styles.memberNumberModal}>
-                      {member.phoneNumber ? `📱 ${member.phoneNumber}` : '📱 Sin teléfono'}
-                    </Text>
-                    
+
+                    {/* Teléfono */}
+                    <View style={styles.contactRow}>
+                      <LucideIcon
+                        Icon={IconComponents.phone}
+                        size={16}
+                        color="#6B7280"
+                      />
+                      <Text style={styles.contactText}>
+                        {member.phoneNumber || 'Sin teléfono'}
+                      </Text>
+                    </View>
+
                     {/* Plan actual */}
                     {member.currentPlan ? (
                       <View style={styles.planInfoContainer}>
-                        <Text style={styles.memberPlanInfo}>
-                          🏋️ {member.currentPlan.planName}
-                        </Text>
+                        <View style={styles.planNameRow}>
+                          <LucideIcon
+                            Icon={IconComponents.dumbbell}
+                            size={16}
+                            color="#1E40AF"
+                          />
+                          <Text style={styles.memberPlanInfo}>
+                            {member.currentPlan.planName}
+                          </Text>
+                        </View>
                         <Text style={styles.memberPlanPrice}>
                           ${member.currentPlan.price} • {member.currentPlan.duration} días
                         </Text>
                       </View>
                     ) : (
-                      <Text style={styles.noPlanText}>⚠️ Sin plan asignado</Text>
+                      <View style={styles.noPlanContainer}>
+                        <LucideIcon
+                          Icon={IconComponents.alert}
+                          size={16}
+                          color="#92400E"
+                        />
+                        <Text style={styles.noPlanText}>Sin plan asignado</Text>
+                      </View>
                     )}
 
                     {/* ═══════════════════════════════════════════════════ */}
@@ -157,13 +218,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <View
                         style={[
                           styles.statusBadgeModal,
-                          { backgroundColor: paymentStatus.bgColor }
+                          { backgroundColor: paymentStatus.bgColor },
                         ]}
                       >
+                        <LucideIcon
+                          Icon={
+                            paymentStatus.text === 'PAGADA'
+                              ? IconComponents.checkCircle
+                              : paymentStatus.text === 'VENCIDA'
+                              ? IconComponents.alert
+                              : IconComponents.clock
+                          }
+                          size={14}
+                          color={paymentStatus.color}
+                        />
                         <Text
                           style={[
                             styles.statusTextModal,
-                            { color: paymentStatus.color }
+                            { color: paymentStatus.color },
                           ]}
                         >
                           {paymentStatus.text}
@@ -173,13 +245,34 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                     {/* Días hasta vencimiento */}
                     {member.daysUntilExpiration !== undefined && member.subscription && (
-                      <Text style={styles.expirationInfo}>
-                        {member.daysUntilExpiration < 0
-                          ? `⚠️ Vencida hace ${Math.abs(member.daysUntilExpiration)} días`
-                          : member.daysUntilExpiration === 0
-                          ? '🔴 Vence hoy'
-                          : `📅 Vence en ${member.daysUntilExpiration} días`}
-                      </Text>
+                      <View style={styles.expirationContainer}>
+                        <LucideIcon
+                          Icon={
+                            member.daysUntilExpiration < 0
+                              ? IconComponents.alert
+                              : IconComponents.calendar
+                          }
+                          size={16}
+                          color={
+                            member.daysUntilExpiration < 0 ? '#991B1B' : '#1E40AF'
+                          }
+                        />
+                        <Text
+                          style={[
+                            styles.expirationInfo,
+                            {
+                              color:
+                                member.daysUntilExpiration < 0 ? '#991B1B' : '#1E40AF',
+                            },
+                          ]}
+                        >
+                          {member.daysUntilExpiration < 0
+                            ? `Vencida hace ${Math.abs(member.daysUntilExpiration)} días`
+                            : member.daysUntilExpiration === 0
+                            ? 'Vence hoy'
+                            : `Vence en ${member.daysUntilExpiration} días`}
+                        </Text>
+                      </View>
                     )}
                   </View>
                 </View>
@@ -191,7 +284,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   style={[styles.actionButton, styles.editButton]}
                   onPress={handleEditProfile}
                 >
-                  <Text style={styles.actionButtonText}>✏️ Editar Perfil</Text>
+                  <LucideIcon Icon={IconComponents.edit} size={18} color="#1E40AF" />
+                  <Text style={styles.actionButtonText}>Editar Perfil</Text>
                 </TouchableOpacity>
 
                 {/* ═══════════════════════════════════════════════════════ */}
@@ -203,7 +297,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       style={[styles.actionButton, styles.primaryButton]}
                       onPress={() => setShowAssignPlan(true)}
                     >
-                      <Text style={styles.actionButtonText}>➕ Asignar Plan</Text>
+                      <LucideIcon Icon={IconComponents.plus} size={18} color="white" />
+                      <Text style={styles.actionButtonText}>Asignar Plan</Text>
                     </TouchableOpacity>
                   )}
 
@@ -214,7 +309,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           style={[styles.actionButton, styles.successButton]}
                           onPress={() => setShowRegisterPayment(true)}
                         >
-                          <Text style={styles.actionButtonText}>💰 Registrar Pago</Text>
+                          <LucideIcon
+                            Icon={IconComponents.dollarSign}
+                            size={18}
+                            color="white"
+                          />
+                          <Text style={styles.actionButtonText}>Registrar Pago</Text>
                         </TouchableOpacity>
                       )}
 
@@ -223,7 +323,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           style={[styles.actionButton, styles.warningButton]}
                           onPress={() => setShowAssignPlan(true)}
                         >
-                          <Text style={styles.actionButtonText}>🔄 Renovar Plan</Text>
+                          <LucideIcon
+                            Icon={IconComponents.refresh}
+                            size={18}
+                            color="white"
+                          />
+                          <Text style={styles.actionButtonText}>Renovar Plan</Text>
                         </TouchableOpacity>
                       )}
                     </>
@@ -234,36 +339,72 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 {/* SECCIÓN: Información detallada */}
                 {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.infoSection}>
-                  <Text style={styles.infoTitle}>📋 Información</Text>
-                  
+                  <Text style={styles.infoTitle}>Información</Text>
+
                   {/* Estado del cliente */}
                   <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Estado Cliente:</Text>
-                    <Text style={styles.infoValue}>
-                      {member.isActive ? '✅ Activo' : '❌ Inactivo (Dado de baja)'}
-                    </Text>
+                    <View style={styles.infoValueContainer}>
+                      <LucideIcon
+                        Icon={
+                          member.isActive
+                            ? IconComponents.checkCircle
+                            : IconComponents.alert
+                        }
+                        size={16}
+                        color={member.isActive ? '#10B981' : '#EF4444'}
+                      />
+                      <Text
+                        style={[
+                          styles.infoValue,
+                          {
+                            color: member.isActive ? '#10B981' : '#EF4444',
+                          },
+                        ]}
+                      >
+                        {member.isActive ? 'Activo' : 'Inactivo'}
+                      </Text>
+                    </View>
                   </View>
-                  
+
                   {/* Género */}
                   <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Género:</Text>
                     <Text style={styles.infoValue}>{member.gender}</Text>
                   </View>
-                  
+
                   {/* Fechas de suscripción */}
                   {member.subscription && (
                     <>
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Inicio:</Text>
-                        <Text style={styles.infoValue}>
-                          {new Date(member.subscription.startDate).toLocaleDateString('es-AR')}
-                        </Text>
+                        <View style={styles.infoValueContainer}>
+                          <LucideIcon
+                            Icon={IconComponents.calendar}
+                            size={16}
+                            color="#6B7280"
+                          />
+                          <Text style={styles.infoValue}>
+                            {new Date(
+                              member.subscription.startDate
+                            ).toLocaleDateString('es-AR')}
+                          </Text>
+                        </View>
                       </View>
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Vencimiento:</Text>
-                        <Text style={styles.infoValue}>
-                          {new Date(member.subscription.endDate).toLocaleDateString('es-AR')}
-                        </Text>
+                        <View style={styles.infoValueContainer}>
+                          <LucideIcon
+                            Icon={IconComponents.calendar}
+                            size={16}
+                            color="#6B7280"
+                          />
+                          <Text style={styles.infoValue}>
+                            {new Date(member.subscription.endDate).toLocaleDateString(
+                              'es-AR'
+                            )}
+                          </Text>
+                        </View>
                       </View>
                     </>
                   )}

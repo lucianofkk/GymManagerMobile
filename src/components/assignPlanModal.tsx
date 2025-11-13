@@ -1,4 +1,5 @@
-// src/components/AssignPlanModal.tsx
+// src/components/AssignPlanModal.tsx - CON VALIDACIÓN DE CLIENTE ACTIVO
+
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -10,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { getClientById } from '../services/clientService';
 import type { MembershipPlan } from '../services/membershipPlansService';
 import { getAllMembershipPlans } from '../services/membershipPlansService';
 import { createSubscription } from '../services/subscriptionsService';
@@ -18,7 +20,7 @@ interface AssignPlanModalProps {
   visible: boolean;
   clientId: string;
   clientName: string;
-  isRenewal: boolean; // true si es renovación, false si es primera vez
+  isRenewal: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -35,47 +37,65 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [assigning, setAssigning] = useState(false);
+  const [clientIsActive, setClientIsActive] = useState(true);
 
-  // Cargar planes cuando se abre el modal
+  // 📌 Cargar datos cuando se abre el modal
   useEffect(() => {
     if (visible) {
-      setPlans([]); // Limpiar primero
+      setPlans([]);
       setSelectedPlan(null);
-      loadPlans();
+      loadData();
     }
   }, [visible]);
 
-  // 📋 Cargar planes desde Firebase
-  const loadPlans = async () => {
+  // 📌 NUEVA FUNCIÓN: Validar que el cliente esté activo
+  const loadData = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Iniciando carga de planes...');
+
+      // 1️⃣ Obtener datos del cliente para verificar si está activo
+      const client = await getClientById(clientId);
       
-      // Usar getAllMembershipPlans() para evitar problemas de índice
+      if (!client) {
+        Alert.alert('Error', 'Cliente no encontrado');
+        onClose();
+        return;
+      }
+
+      // 2️⃣ VALIDACIÓN: Si el cliente NO está activo, mostrar error
+      if (!client.isActive) {
+        setClientIsActive(false);
+        Alert.alert(
+          '❌ Cliente Inactivo',
+          `No se puede asignar planes a ${clientName} porque está dado de baja.\n\nPor favor reactiva el cliente primero.`,
+          [
+            {
+              text: 'OK',
+              onPress: onClose,
+            },
+          ]
+        );
+        return;
+      }
+
+      setClientIsActive(true);
+
+      // 3️⃣ Cargar planes solo si el cliente está activo
       const allPlans = await getAllMembershipPlans();
-      console.log('📦 Todos los planes recibidos:', allPlans.length);
-      console.log('📦 Primer plan:', JSON.stringify(allPlans[0], null, 2));
-      
-      // Filtrar solo los activos y ordenar manualmente
+
       const activePlans = allPlans
-        .filter(plan => {
-          console.log(`Plan "${plan.planName}" - isActive: ${plan.isActive}, id: ${plan.id}`);
-          return plan.isActive;
-        })
+        .filter((plan) => plan.isActive)
         .sort((a, b) => a.price - b.price);
-      
-      console.log('📋 Planes activos cargados:', activePlans.length);
-      console.log('📋 IDs de planes activos:', activePlans.map(p => p.id));
-      
+
       setPlans(activePlans);
-      console.log('✅ Estado actualizado con', activePlans.length, 'planes');
-      
+
       if (activePlans.length === 0) {
-        console.warn('⚠️ No se encontraron planes activos');
+        Alert.alert('Información', 'No hay planes disponibles');
       }
     } catch (error) {
-      console.error('❌ Error loading plans:', error);
-      Alert.alert('Error', 'No se pudieron cargar los planes');
+      console.error('❌ Error loading data:', error);
+      Alert.alert('Error', 'No se pudieron cargar los datos');
+      onClose();
     } finally {
       setLoading(false);
     }
@@ -85,6 +105,12 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   const handleAssignPlan = async () => {
     if (!selectedPlan) {
       Alert.alert('Error', 'Por favor selecciona un plan');
+      return;
+    }
+
+    // 📌 DOBLE VALIDACIÓN: Verificar nuevamente que está activo
+    if (!clientIsActive) {
+      Alert.alert('Error', 'El cliente debe estar activo para asignar un plan');
       return;
     }
 
@@ -103,7 +129,7 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
           {
             text: 'OK',
             onPress: () => {
-              onSuccess(); // Cierra modales y recarga
+              onSuccess();
             },
           },
         ]
@@ -135,20 +161,38 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.subtitle}>Cliente: {clientName}</Text>
+          <View style={styles.clientInfoContainer}>
+            <Text style={styles.subtitle}>Cliente: {clientName}</Text>
+            {/* 📌 NUEVO: Indicador de estado del cliente */}
+            <View
+              style={[
+                styles.clientStatusBadge,
+                {
+                  backgroundColor: clientIsActive ? '#D1FAE5' : '#FEE2E2',
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.clientStatusText,
+                  {
+                    color: clientIsActive ? '#065F46' : '#991B1B',
+                  },
+                ]}
+              >
+                {clientIsActive ? '✅ Activo' : '❌ Inactivo'}
+              </Text>
+            </View>
+          </View>
 
           {/* Lista de planes */}
           <ScrollView style={styles.plansContainer} showsVerticalScrollIndicator={false}>
-            {(() => {
-              console.log('🎨 Renderizando. Loading:', loading, 'Plans length:', plans.length);
-              return null;
-            })()}
             {loading ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#1E40AF" />
                 <Text style={styles.loadingText}>Cargando planes...</Text>
               </View>
-            ) : plans.length > 0 ? (
+            ) : clientIsActive && plans.length > 0 ? (
               plans.map((plan) => (
                 <TouchableOpacity
                   key={plan.id}
@@ -179,8 +223,19 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                   </View>
                 </TouchableOpacity>
               ))
+            ) : !clientIsActive ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateIcon}>🚫</Text>
+                <Text style={styles.emptyStateText}>
+                  Cliente inactivo
+                </Text>
+                <Text style={styles.emptyStateSubtext}>
+                  No se puede asignar planes a un cliente dado de baja
+                </Text>
+              </View>
             ) : (
               <View style={styles.emptyState}>
+                <Text style={styles.emptyStateIcon}>📋</Text>
                 <Text style={styles.emptyStateText}>
                   No hay planes disponibles
                 </Text>
@@ -195,10 +250,10 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
           <TouchableOpacity
             style={[
               styles.assignButton,
-              (!selectedPlan || assigning) && styles.assignButtonDisabled,
+              (!selectedPlan || assigning || !clientIsActive) && styles.assignButtonDisabled,
             ]}
             onPress={handleAssignPlan}
-            disabled={!selectedPlan || assigning}
+            disabled={!selectedPlan || assigning || !clientIsActive}
           >
             {assigning ? (
               <>
@@ -231,8 +286,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
     maxHeight: '80%',
-    borderWidth: 1,
-    borderColor: 'red'
   },
   header: {
     flexDirection: 'row',
@@ -257,10 +310,28 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#6B7280',
   },
+  // 📌 NUEVO: Contenedor con información del cliente
+  clientInfoContainer: {
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
   subtitle: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  // 📌 NUEVO: Badge de estado del cliente
+  clientStatusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  clientStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   plansContainer: {
     flex: 1,
@@ -337,6 +408,10 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: 12,
   },
   emptyStateText: {
     fontSize: 16,
