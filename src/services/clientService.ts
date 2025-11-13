@@ -1,4 +1,5 @@
-// src/services/clientService.ts
+// src/services/clientService.ts - MEJORADO
+
 import {
   addDoc,
   collection,
@@ -13,18 +14,18 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { deactivateClientSubscriptions } from "./subscriptionsService";
 
 // Tipo del cliente
 export interface Client {
   id?: string;
   firstName: string;
   lastName: string;
-  phoneNumber?: string; // Ahora es opcional
+  phoneNumber?: string;
   gender: 'Masculino' | 'Femenino';
   isActive: boolean;
 }
 
-// Colección
 const clientsCollection = collection(db, "clients");
 
 // 🟢 Crear cliente
@@ -84,13 +85,25 @@ export const updateClient = async (id: string, data: Partial<Client>) => {
   });
 };
 
-// 🔴 Eliminar cliente (soft delete)
+// EJORADO: Dar de baja cliente (soft delete)-------------------------------------------------
+//  Ahora también marca sus suscripciones como inactivas-------------------------------------
 export const deleteClient = async (id: string) => {
-  const ref = doc(db, "clients", id);
-  await updateDoc(ref, {
-    isActive: false,
-    updatedAt: Timestamp.now(),
-  });
+  try {
+    // 1️⃣Marcar cliente como inactivo
+    const ref = doc(db, "clients", id);
+    await updateDoc(ref, {
+      isActive: false,
+      updatedAt: Timestamp.now(),
+    });
+
+    // 2️ NUEVO: Desactivar también sus suscripciones
+    await deactivateClientSubscriptions(id);
+
+    console.log(`✅ Cliente ${id} dado de baja correctamente`);
+  } catch (error) {
+    console.error(`❌ Error al dar de baja cliente ${id}:`, error);
+    throw error;
+  }
 };
 
 // ⚠️ Eliminar cliente permanentemente
@@ -98,5 +111,3 @@ export const permanentlyDeleteClient = async (id: string) => {
   const ref = doc(db, "clients", id);
   await deleteDoc(ref);
 };
-
-//CRUD completo para clientes

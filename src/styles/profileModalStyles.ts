@@ -1,9 +1,11 @@
-// src/styles/profileModalStyles.ts
+// src/styles/profileModalStyles.ts - ACTUALIZADO PARA LUCIDE ICONS
+
 import { StyleSheet } from 'react-native';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ESTILOS: MODAL DE PERFIL DE CLIENTE
 // Paleta: Azul (#1E40AF) + Blanco + Grises + Colores de estado
+// Con soporte para Lucide Icons
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const styles = StyleSheet.create({
@@ -12,7 +14,7 @@ export const styles = StyleSheet.create({
   // ═════════════════════════════════════════════════════════════════════════
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo oscuro semi-transparente
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -22,7 +24,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 380,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -39,11 +41,13 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'flex-end',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
 
   closeButton: {
     padding: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'transparent',
     borderRadius: 20,
     width: 36,
     height: 36,
@@ -70,21 +74,25 @@ export const styles = StyleSheet.create({
   profileSection: {
     flexDirection: 'row',
     marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
 
   modalAvatarContainer: {
     marginRight: 16,
   },
 
+  // 📌 ACTUALIZADO: Avatar para Lucide icons
   modalAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    backgroundColor: '#F3F4F6',
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: '#1E40AF',
   },
 
   avatarText: {
@@ -98,9 +106,31 @@ export const styles = StyleSheet.create({
 
   memberNameModal: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
+    marginBottom: 8,
+  },
+
+  // 📌 NUEVO: Estilos para filas con iconos
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
+
+  contactText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+
+  // 📌 NUEVO: Estilos para nombre del plan con icono
+  planNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
+    gap: 6,
   },
 
   memberNumberModal: {
@@ -110,14 +140,20 @@ export const styles = StyleSheet.create({
   },
 
   planInfoContainer: {
-    marginBottom: 8,
+    marginBottom: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#1E40AF',
   },
 
   memberPlanInfo: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: '#1E40AF',
-    marginBottom: 2,
+    marginBottom: 4,
   },
 
   memberPlanPrice: {
@@ -125,53 +161,85 @@ export const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
+  // 📌 NUEVO: Contenedor para sin plan
+  noPlanContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    gap: 8,
+  },
+
   noPlanText: {
     fontSize: 12,
-    color: '#F59E0B',
-    fontWeight: '500',
-    marginBottom: 8,
+    color: '#92400E',
+    fontWeight: '600',
   },
 
   quotaContainerModal: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
+    gap: 8,
   },
 
   quotaLabelModal: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
     color: '#6B7280',
-    marginRight: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 
+  // 📌 ACTUALIZADO: Badge de estado con soporte para iconos
   statusBadgeModal: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 6,
   },
 
   statusTextModal: {
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: '700',
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // 📌 NUEVO: Contenedor para información de expiración
+  expirationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
   },
 
   expirationInfo: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 8,
-    fontStyle: 'italic',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 
   // ═════════════════════════════════════════════════════════════════════════
   // SECCIÓN: Botones de acción
   // ═════════════════════════════════════════════════════════════════════════
   actionButton: {
-    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    alignItems: 'center',
     marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -182,13 +250,15 @@ export const styles = StyleSheet.create({
 
   actionButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
 
   // Botón Editar (Azul principal)
   editButton: {
     backgroundColor: '#1E40AF',
+    borderWidth: 1,
+    borderColor: '#1E40AF',
   },
 
   // Botón Primario (Azul)
@@ -217,6 +287,7 @@ export const styles = StyleSheet.create({
   actionsContainer: {
     gap: 12,
     marginVertical: 16,
+    paddingVertical: 8,
   },
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -227,10 +298,12 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
 
   infoTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     marginBottom: 12,
@@ -239,20 +312,30 @@ export const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    gap: 10,
   },
 
   infoLabel: {
     fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
-    minWidth: 100,
+    minWidth: 90,
+  },
+
+  // 📌 NUEVO: Contenedor para valores con iconos
+  infoValueContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 
   infoValue: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#111827',
     fontWeight: '500',
+    flex: 1,
   },
 
   // ═════════════════════════════════════════════════════════════════════════
