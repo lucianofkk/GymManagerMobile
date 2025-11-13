@@ -4,14 +4,14 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    RefreshControl,
-    SafeAreaView,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { ProfileModal } from '../../components/profileModal';
 import { getClientsWithSubscription } from '../../services/businessLogic';
@@ -209,7 +209,7 @@ export default function MembersListScreen() {
                   </View>
                   {member.currentPlan && (
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoIcon}>💰</Text>
+                      <Text style={styles.infoIcon}>💵</Text>
                       <Text style={styles.infoText}>${member.currentPlan.price}</Text>
                     </View>
                   )}

@@ -56,7 +56,6 @@ export default function TabsLayout() {
       {/* ═══════════════════════════════════════════════════════════════ */}
       {/* PESTAÑA 2: PAGOS */}
       {/* Icono: card (tarjeta de crédito) - Registro de pagos */}
-      {/* Nombre real: paymetsHistory (con typo en proyecto original) */}
       {/* ═══════════════════════════════════════════════════════════════ */}
       <Tabs.Screen 
         name="paymetsHistory" 
@@ -114,40 +113,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-
-// ═══════════════════════════════════════════════════════════════════════════
-// 🎨 ICONOS UTILIZADOS EN ESTA VERSIÓN:
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// home                 → 🏠 Dashboard (Panel de control)
-// card                 → 💳 Pagos (Tarjeta de crédito)
-// people               → 👥 Clientes (Personas/miembros)
-// receipt              → 🧾 Cuotas (Recibo/factura)
-// information-circle   → ℹ️  Acerca (Información)
-//
-// ═══════════════════════════════════════════════════════════════════════════
-// 📚 ALTERNATIVAS DE ICONOS SI QUIERES CAMBIAR:
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// Para DASHBOARD:
-// - stats-chart       → Gráfico de estadísticas
-// - bar-chart         → Gráfico de barras
-// - trending-up       → Tendencia al alza
-//
-// Para PAGOS:
-// - wallet            → Billetera
-// - cash              → Dinero en efectivo
-// - swap-vertical     → Transacciones
-//
-// Para CLIENTES:
-// - person            → Una persona
-// - contacts          → Contactos
-// - users             → Usuarios
-//
-// Para CUOTAS:
-// - pricetags         → Etiquetas de precio
-// - fitness           → Planes de fitness
-// - calendar          → Calendario
-// - checkmark-done    → Pagado
-//
-// ═══════════════════════════════════════════════════════════════════════════

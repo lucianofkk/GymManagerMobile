@@ -1,15 +1,8 @@
-// src/app/(tabs)/dashboard.tsx - REFACTORIZADO CON LUCIDE + DATOS REALES
+// src/app/(tabs)/dashboard.tsx - CON IONICONS
+
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
-import {
-    Calendar,
-    Clock,
-    DollarSign,
-    Plus,
-    Sparkles,
-    Users,
-    Users as ViewAllUsers,
-} from 'lucide-react';
 import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
@@ -33,30 +26,30 @@ import { ClientWithSubscription, DashboardStats, RecentActivity } from '../../ty
 
 const { width } = Dimensions.get('window');
 
-// ============ MAPEO DE ICONOS LUCIDE ============
-// 📌 MEJOR QUE EMOJIS: Componentes vectoriales personalizables
+// ============ MAPEO DE ICONOS IONICONS ============
+// 📌 Ionicons disponibles en Expo
 const ACTIVITY_ICON_MAP = {
-    payment: DollarSign,
-    new_client: Users,
-    renewal: Users,
-    expiring: Clock,
+    payment: 'card',
+    new_client: 'person-add',
+    renewal: 'refresh',
+    expiring: 'alarm',
 };
 
 // ============ COMPONENTE STATS CARD ============
-// 📌 CAMBIO: IconComponent ahora es un componente Lucide en lugar de emoji
+// 📌 CAMBIO: Ahora usa Ionicons en lugar de componentes
 const StatsCard = ({
     title,
     value,
     subtitle,
     color,
-    IconComponent,
+    iconName,
     onPress,
 }: {
     title: string;
     value: string | number;
     subtitle: string;
     color: string;
-    IconComponent: React.FC<{ size: number; color: string; strokeWidth: number }>;
+    iconName: keyof typeof Ionicons.glyphMap;
     onPress?: () => void;
 }) => (
     <TouchableOpacity
@@ -66,10 +59,9 @@ const StatsCard = ({
     >
         <View style={styles.statsContent}>
             <View style={styles.statsHeader}>
-                {/* ANTES: <Text style={styles.statsIcon}>{icon}</Text> */}
-                {/* AHORA: Componente Lucide vectorial */}
+                {/* 📌 CAMBIO: Usar Ionicons directamente */}
                 <View style={styles.iconContainer}>
-                    <IconComponent size={24} color={color} strokeWidth={1.5} />
+                    <Ionicons name={iconName} size={24} color={color} />
                 </View>
                 <Text style={styles.statsTitle}>{title}</Text>
             </View>
@@ -80,15 +72,15 @@ const StatsCard = ({
 );
 
 // ============ COMPONENTE QUICK ACTION ============
-// 📌 CAMBIO: IconComponent es un componente Lucide
+// 📌 CAMBIO: Ahora usa Ionicons
 const QuickActionButton = ({
     title,
-    IconComponent,
+    iconName,
     color,
     onPress,
 }: {
     title: string;
-    IconComponent: React.FC<{ size: number; color: string; strokeWidth: number }>;
+    iconName: keyof typeof Ionicons.glyphMap;
     color: string;
     onPress: () => void;
 }) => (
@@ -97,20 +89,17 @@ const QuickActionButton = ({
         onPress={onPress}
         activeOpacity={0.8}
     >
-        {/* ANTES: <Text style={styles.quickActionIcon}>{icon}</Text> */}
-        {/* AHORA: Componente Lucide en blanco */}
-        <View style={styles.quickActionIconContainer}>
-            <IconComponent size={32} color="white" strokeWidth={1.5} />
-        </View>
+        {/* 📌 CAMBIO: Usar Ionicons directamente */}
+        <Ionicons name={iconName} size={32} color="white" />
         <Text style={styles.quickActionText}>{title}</Text>
     </TouchableOpacity>
 );
 
 // ============ COMPONENTE ACTIVITY ITEM ============
-// 📌 CAMBIO PRINCIPAL: Busca icono en mapeo en lugar de switch
+// 📌 CAMBIO PRINCIPAL: Busca icono en mapeo
 const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
-    // Obtener el componente de icono según el tipo
-    const IconComponent = ACTIVITY_ICON_MAP[activity.type] || Clock;
+    // Obtener el nombre del icono según el tipo
+    const iconName = ACTIVITY_ICON_MAP[activity.type] || 'alert-circle';
 
     const getActivityText = (activity: RecentActivity) => {
         switch (activity.type) {
@@ -129,10 +118,9 @@ const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
 
     return (
         <View style={styles.activityItem}>
-            {/* ANTES: <Text style={styles.activityIcon}>{getActivityIcon(activity.type)}</Text> */}
-            {/* AHORA: Componente Lucide con color primario */}
+            {/* 📌 CAMBIO: Usar Ionicons directamente */}
             <View style={styles.activityIconContainer}>
-                <IconComponent size={20} color="#1E40AF" strokeWidth={1.5} />
+                <Ionicons name={iconName as keyof typeof Ionicons.glyphMap} size={20} color="#1E40AF" />
             </View>
             <View style={styles.activityContent}>
                 <Text style={styles.activityText}>{getActivityText(activity)}</Text>
@@ -142,7 +130,7 @@ const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
     );
 };
 
-// ============ PANTALLA PRINCIPAL ============
+// ============ DASHBOARD SCREEN ============
 const DashboardScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -166,11 +154,11 @@ const DashboardScreen = () => {
         try {
             setLoading(true);
 
-            // ✅ Obtener estadísticas usando businessLogic (TUS SERVICES)
+            // ✅ Obtener estadísticas
             const dashboardStats = await getDashboardStats();
             setStats(dashboardStats);
 
-            // ✅ Obtener datos para actividades recientes (TUS SERVICES)
+            // ✅ Obtener datos para actividades recientes
             const clientsWithSub = await getClientsWithSubscription();
             const payments = await getPayments();
 
@@ -183,7 +171,7 @@ const DashboardScreen = () => {
         }
     };
 
-    // ✅ MANTIENE TU LÓGICA: Generar actividades recientes combinando datos
+    // ✅ Generar actividades recientes
     const generateRecentActivities = (
         clients: ClientWithSubscription[],
         payments: any[]
@@ -212,17 +200,13 @@ const DashboardScreen = () => {
         clients
             .filter((client) => {
                 if (!client.subscription?.endDate) return false;
-                const daysUntilExpiry = calculateDaysUntilExpiration(
-                    client.subscription.endDate
-                );
+                const daysUntilExpiry = calculateDaysUntilExpiration(client.subscription.endDate);
                 return daysUntilExpiry >= 0 && daysUntilExpiry <= 7;
             })
             .slice(0, 3)
             .forEach((client) => {
                 if (client.subscription?.endDate) {
-                    const daysUntilExpiry = calculateDaysUntilExpiration(
-                        client.subscription.endDate
-                    );
+                    const daysUntilExpiry = calculateDaysUntilExpiration(client.subscription.endDate);
                     activities.push({
                         id: `expiring-${client.id}`,
                         type: 'expiring',
@@ -236,7 +220,7 @@ const DashboardScreen = () => {
         return activities.slice(0, 5);
     };
 
-    // ✅ MANTIENE TU LÓGICA: Formatear fechas
+    // ✅ Formatear fechas
     const formatDate = (date: Date): string => {
         try {
             const today = new Date();
@@ -269,7 +253,6 @@ const DashboardScreen = () => {
         setRefreshing(false);
     }, []);
 
-    // ✅ MANTIENE TU LÓGICA: Manejar acciones rápidas
     const handleQuickAction = (action: string) => {
         switch (action) {
             case 'clients':
@@ -279,7 +262,7 @@ const DashboardScreen = () => {
                 router.push('/(clients)/newMember');
                 break;
             case 'expiring':
-                router.push('/(clients)/membersList');
+              router.push('/(clients)/membersList');
                 break;
             default:
                 console.log(`Action: ${action}`);
@@ -297,9 +280,7 @@ const DashboardScreen = () => {
                 }
                 showsVerticalScrollIndicator={false}
             >
-                {/* ═══════════════════════════════════════════════════════════════ */}
-                {/* HEADER - Título y fecha */}
-                {/* ═══════════════════════════════════════════════════════════════ */}
+                {/* HEADER */}
                 <View style={styles.header}>
                     <Text style={styles.welcomeText}>¡Buen día!</Text>
                     <Text style={styles.gymTitle}>Panel de Control</Text>
@@ -313,9 +294,7 @@ const DashboardScreen = () => {
                     </Text>
                 </View>
 
-                {/* ═══════════════════════════════════════════════════════════════ */}
-                {/* ESTADO DE CARGA O CONTENIDO */}
-                {/* ═══════════════════════════════════════════════════════════════ */}
+                {/* ESTADO DE CARGA */}
                 {loading ? (
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#1E40AF" />
@@ -323,16 +302,14 @@ const DashboardScreen = () => {
                     </View>
                 ) : (
                     <>
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         {/* TARJETAS DE ESTADÍSTICAS */}
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         <View style={styles.statsContainer}>
                             <StatsCard
                                 title="Clientes Activos"
                                 value={stats.activeClients}
                                 subtitle={`de ${stats.totalClients} totales`}
                                 color="#10B981"
-                                IconComponent={Users}
+                                iconName="people"
                                 onPress={() => handleQuickAction('clients')}
                             />
 
@@ -341,7 +318,7 @@ const DashboardScreen = () => {
                                 value={stats.expiringThisWeek}
                                 subtitle="requieren renovación"
                                 color="#F59E0B"
-                                IconComponent={Clock}
+                                iconName="alarm"
                                 onPress={() => handleQuickAction('expiring')}
                             />
 
@@ -350,7 +327,7 @@ const DashboardScreen = () => {
                                 value={`$${stats.monthlyIncome.toLocaleString('es-AR')}`}
                                 subtitle="ingresos acumulados"
                                 color="#1E40AF"
-                                IconComponent={DollarSign}
+                                iconName="card"
                             />
 
                             <StatsCard
@@ -358,40 +335,36 @@ const DashboardScreen = () => {
                                 value={stats.newClientsThisMonth}
                                 subtitle="este mes"
                                 color="#8B5CF6"
-                                IconComponent={Sparkles}
+                                iconName="sparkles"
                             />
                         </View>
 
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         {/* ACCESOS RÁPIDOS */}
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         <View style={styles.quickActionsContainer}>
                             <Text style={styles.sectionTitle}>Accesos Rápidos</Text>
                             <View style={styles.quickActionsRow}>
                                 <QuickActionButton
                                     title="Nuevo Cliente"
-                                    IconComponent={Plus}
+                                    iconName="person-add"
                                     color="#1E40AF"
                                     onPress={() => handleQuickAction('add_client')}
                                 />
                                 <QuickActionButton
                                     title="Ver Clientes"
-                                    IconComponent={ViewAllUsers}
+                                    iconName="people"
                                     color="#10B981"
                                     onPress={() => handleQuickAction('clients')}
                                 />
                                 <QuickActionButton
                                     title="Vencimientos"
-                                    IconComponent={Calendar}
+                                    iconName="calendar"
                                     color="#F59E0B"
                                     onPress={() => handleQuickAction('expiring')}
                                 />
                             </View>
                         </View>
 
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         {/* ACTIVIDAD RECIENTE */}
-                        {/* ═══════════════════════════════════════════════════════════════ */}
                         {recentActivities.length > 0 && (
                             <View style={styles.activitiesContainer}>
                                 <Text style={styles.sectionTitle}>Actividad Reciente</Text>
@@ -403,9 +376,7 @@ const DashboardScreen = () => {
                             </View>
                         )}
 
-                        {/* ═══════════════════════════════════════════════════════════════ */}
-                        {/* ESTADO VACÍO - Sin actividad reciente */}
-                        {/* ═══════════════════════════════════════════════════════════════ */}
+                        {/* ESTADO VACÍO */}
                         {recentActivities.length === 0 && !loading && (
                             <View style={styles.emptyActivities}>
                                 <Text style={styles.emptyActivitiesIcon}>📭</Text>
