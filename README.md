@@ -45,10 +45,10 @@ Un resumen visual que muestra:
 - Ver lista completa de clientes
 - Buscar por nombre o apellido
 - Ver estado de cada membresía (activa/vencida)
-- Asignar planes: Basic, Standard o Premium
+- Asignar planes: Basico, Standard o Promocionales/Custom
 
 ### 💳 Control de Pagos
-- Registrar pagos (efectivo, transferencia, tarjeta)
+- Registrar pagos (efectivo, transferencia)
 - Marcar como pagado/no pagado con un simple switch
 - Ver historial completo de pagos por cliente
 - Cálculo automático de recargos por retrasos
@@ -93,7 +93,7 @@ La aplicación cuenta con las siguientes pantallas:
 - ✅ **Sprint 1:** Diseño UI/UX y configuración inicial
 - ✅ **Sprint 2:** Sistema de gestión de clientes (CRUD completo)
 - 🚧 **Sprint 3:** Sistema de pagos y cálculo de multas (Completo)
-- 📋 **Sprint 4:** Notificaciones y búsqueda avanzada (Completo)
+- ✅**Sprint 4:** Notificaciones y búsqueda avanzada (Completo)
 - 📋 **Sprint 5:** Pruebas finales, auth y documentación (Finalizando)
 
 ---
