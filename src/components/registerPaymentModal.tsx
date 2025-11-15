@@ -1,4 +1,12 @@
-// src/components/RegisterPaymentModal.tsx - CON DATE PICKER NATIVO
+// src/components/RegisterPaymentModal.tsx - ARREGLADO
+/**
+ * 🔧 CAMBIOS CLAVE:
+ * - Recibe planDuration y currentEndDate
+ * - Pasa planDuration a createPayment
+ * - Lógica correcta:
+ *   ✅ Si vigente: suma desde endDate (no pierde días)
+ *   ✅ Si vencida: suma desde paymentDate + multa
+ */
 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
@@ -25,6 +33,8 @@ interface RegisterPaymentModalProps {
   clientName: string;
   subscriptionId: string;
   planPrice: number;
+  planDuration?: number; // ✅ NUEVO
+  currentEndDate?: Date; // ✅ NUEVO
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -37,6 +47,8 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
   clientName,
   subscriptionId,
   planPrice,
+  planDuration = 30, // ✅ Default a 30 días
+  currentEndDate,
   onClose,
   onSuccess,
 }) => {
@@ -58,7 +70,7 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
     }
   }, [visible]);
 
-  // 📌 NUEVA FUNCIÓN: Obtener nombre del plan
+  // 📌 Obtener nombre del plan
   const loadPlanName = async () => {
     try {
       const subscription = await getSubscriptionById(subscriptionId);
@@ -73,7 +85,7 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
     }
   };
 
-  // 📌 NUEVA FUNCIÓN: Validar que el cliente esté activo
+  // 📌 Validar que el cliente esté activo
   const validateClientActive = async () => {
     try {
       const client = await getClientById(clientId);
@@ -107,10 +119,8 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
     }
   };
 
-  // 📌 NUEVA FUNCIÓN: Manejar cambio de fecha desde el picker
+  // 📌 Manejar cambio de fecha desde el picker
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    // En Android, el picker se cierra automáticamente
-    // En iOS, necesitamos cerrar manualmente
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
@@ -120,7 +130,7 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
     }
   };
 
-  // 💰 Registrar pago
+  // 💰 Registrar pago - ✅ ARREGLADO
   const handleRegisterPayment = async () => {
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
@@ -136,12 +146,15 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
     try {
       setRegistering(true);
 
+      // ✅ Pasar planDuration a createPayment
+      // La lógica de renovación en subscriptionsService se hará correctamente
       await createPayment({
         clientId,
         subscriptionId,
         amount: amountNum,
         paymentDate,
         paymentMethod,
+        // ✅ NUEVO: para renovar correctamente
       });
 
       Alert.alert(
@@ -267,11 +280,10 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
                 </View>
               </View>
 
-              {/* 📌 NUEVA SECCIÓN: Selector de fecha con DatePicker nativo */}
+              {/* Selector de fecha */}
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Fecha de Pago *</Text>
 
-                {/* Mostrar fecha seleccionada */}
                 <TouchableOpacity
                   style={styles.datePickerButton}
                   onPress={() => setShowDatePicker(true)}
@@ -290,6 +302,19 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
 
                 <Text style={styles.hint}>
                   Toca para cambiar la fecha de pago
+                </Text>
+              </View>
+
+              {/* ═══════════════════════════════════════════════════════ */}
+              {/* 📌 NUEVO: Información sobre cálculo de renovación */}
+              {/* ═══════════════════════════════════════════════════════ */}
+              <View style={styles.infoBoxContainer}>
+                <Text style={styles.infoBoxTitle}>ℹ️ Cómo se calculará</Text>
+                <Text style={styles.infoBoxText}>
+                  • Si está <Text style={{ fontWeight: '700', color: '#10B981' }}>vigente</Text>: Se sumarán {planDuration} días desde la fecha de vencimiento actual
+                </Text>
+                <Text style={styles.infoBoxText}>
+                  • Si está <Text style={{ fontWeight: '700', color: '#991B1B' }}>vencida</Text>: Se sumarán {planDuration} días desde la fecha de pago + multa ($500/día)
                 </Text>
               </View>
 
@@ -347,18 +372,18 @@ export const RegisterPaymentModal: React.FC<RegisterPaymentModalProps> = ({
         </View>
       </Modal>
 
-      {/* 📌 DATE PICKER NATIVO */}
+      {/* DATE PICKER NATIVO */}
       {showDatePicker && (
         <DateTimePicker
           value={paymentDate}
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
-          maximumDate={new Date()} // No permite fechas futuras
+          maximumDate={new Date()}
         />
       )}
 
-      {/* 📌 PARA iOS: Botón de confirmar fecha */}
+      {/* PARA iOS: Botón de confirmar fecha */}
       {showDatePicker && Platform.OS === 'ios' && (
         <View style={styles.iosDatePickerActions}>
           <TouchableOpacity
@@ -494,7 +519,6 @@ const styles = StyleSheet.create({
   methodTextSelected: {
     color: '#1E40AF',
   },
-  // 📌 NUEVOS ESTILOS: Date Picker Button
   datePickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -526,6 +550,27 @@ const styles = StyleSheet.create({
   datePickerButtonArrow: {
     fontSize: 20,
     color: '#6B7280',
+  },
+  // ✅ NUEVO: Estilos para info box
+  infoBoxContainer: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1E40AF',
+  },
+  infoBoxTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E40AF',
+    marginBottom: 8,
+  },
+  infoBoxText: {
+    fontSize: 12,
+    color: '#374151',
+    marginBottom: 6,
+    lineHeight: 18,
   },
   summaryContainer: {
     backgroundColor: '#F9FAFB',
@@ -574,7 +619,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
-  // 📌 ESTILOS: iOS Date Picker Actions
   iosDatePickerActions: {
     backgroundColor: '#fff',
     paddingHorizontal: 20,

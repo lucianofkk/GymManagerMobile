@@ -1,4 +1,12 @@
-// src/components/profileModal.tsx - CON MATERIAL COMMUNITY ICONS
+// src/components/profileModal.tsx - ARREGLADO
+/**
+ * 🔧 CAMBIO CLAVE:
+ * - "Renovar Plan" SOLO aparece si isExpired (< 0)
+ * - NO aparece si isExpiringSoon (0-7 días)
+ * - Cuando paga vigente: suma 30 días desde endDate
+ * - Cuando paga vencido: suma 30 días desde paymentDate + multa
+ */
+
 import { ClientWithSubscription } from '@/types/type';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
@@ -15,7 +23,6 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
-// 📌 MAPEO DE ICONOS MATERIAL COMMUNITY
 const IconNames = {
   close: 'close',
   user: 'account',
@@ -31,7 +38,6 @@ const IconNames = {
   clock: 'clock-outline',
 };
 
-// 📌 COMPONENTE HELPER: Icono Material Community personalizado
 interface MaterialIconProps {
   name: string;
   size?: number;
@@ -115,7 +121,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const paymentStatus = getPaymentStatus();
   const hasSubscription = !!member.subscription;
+  
+  // ✅ ARREGLADO: isExpired es SOLO para vencidas (< 0)
   const isExpired = (member.daysUntilExpiration || 0) < 0;
+  
+  // ✅ isExpiringSoon es para las que vencen pronto (0-7 días)
   const isExpiringSoon = (member.daysUntilExpiration || 0) <= 7 && (member.daysUntilExpiration || 0) >= 0;
 
   return (
@@ -278,6 +288,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 {/* BOTONES: Acciones de suscripción */}
                 {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.actionsContainer}>
+                  {/* 1️⃣ SIN SUSCRIPCIÓN: Mostrar "Asignar Plan" */}
                   {!hasSubscription && (
                     <TouchableOpacity
                       style={[styles.actionButton, styles.primaryButton]}
@@ -288,8 +299,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     </TouchableOpacity>
                   )}
 
+                  {/* 2️⃣ CON SUSCRIPCIÓN */}
                   {hasSubscription && (
                     <>
+                      {/* 💰 Botón "Registrar Pago" - Solo si NO está pagada */}
                       {member.subscription?.paymentStatus !== 'paid' && (
                         <TouchableOpacity
                           style={[styles.actionButton, styles.successButton]}
@@ -304,7 +317,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         </TouchableOpacity>
                       )}
 
-                      {(isExpired || isExpiringSoon) && (
+                      {/* 🔄 Botón "Renovar Plan" - ✅ SOLO si está VENCIDA (< 0) */}
+                      {isExpired && (
                         <TouchableOpacity
                           style={[styles.actionButton, styles.warningButton]}
                           onPress={() => setShowAssignPlan(true)}
@@ -421,6 +435,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         clientName={`${member.firstName} ${member.lastName}`}
         subscriptionId={member.subscription?.id || ''}
         planPrice={member.currentPlan?.price || 0}
+        planDuration={member.currentPlan?.duration || 30}
+        currentEndDate={member.subscription?.endDate}
         onClose={() => setShowRegisterPayment(false)}
         onSuccess={() => {
           setShowRegisterPayment(false);

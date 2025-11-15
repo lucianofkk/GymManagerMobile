@@ -1,7 +1,8 @@
-// src/services/businessLogic.ts
+// src/services/businessLogic.ts - VERSIÓN CORREGIDA
 /**
- * Lógica de negocio que combina múltiples servicios
- * Maneja clientes, suscripciones, planes y estadísticas
+ * 🔧 CAMBIOS:
+ * - expiringThisWeek ahora usa getActiveSubscription (una por cliente)
+ * - Evita contar múltiples suscripciones del mismo cliente
  */
 
 import {
@@ -11,16 +12,12 @@ import {
 import { getClients } from './clientService';
 import { getMembershipPlanById } from './membershipPlansService';
 import { getPayments } from './paymentService';
-import { getSubscriptions } from './subscriptionsService';
+import { getActiveSubscription } from './subscriptionsService';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// UTILIDADES: Conversión y cálculos
+// UTILIDADES
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Convierte un timestamp de Firestore a Date de forma segura
- * Maneja diferentes formatos: Timestamp, Date, null
- */
 const safeToDate = (timestamp: any): Date | null => {
   if (!timestamp) return null;
   if (timestamp.toDate && typeof timestamp.toDate === 'function') {
@@ -32,10 +29,6 @@ const safeToDate = (timestamp: any): Date | null => {
   return null;
 };
 
-/**
- * Calcula los días hasta el vencimiento
- * Retorna número positivo si falta tiempo, negativo si está vencido
- */
 export const calculateDaysUntilExpiration = (endDate: Date): number => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -46,37 +39,26 @@ export const calculateDaysUntilExpiration = (endDate: Date): number => {
   return diffDays;
 };
 
-/**
- * Calcula la multa por retraso
- * $500 por cada día vencido
- */
 export const calculateLateFee = (endDate: Date): number => {
   const daysOverdue = -calculateDaysUntilExpiration(endDate);
   if (daysOverdue <= 0) return 0;
-  return daysOverdue * 500; // $500 por día de retraso
+  return daysOverdue * 500;
 };
 
-/**
- * Determina el estado de la suscripción
- * Retorna: 'paid' | 'pending' | 'overdue'
- */
 const getSubscriptionStatus = (
   endDate: Date,
   paymentStatus: string
 ): 'paid' | 'pending' | 'overdue' => {
   const days = calculateDaysUntilExpiration(endDate);
-  
-  // Si está vencido, siempre es 'overdue'
+
   if (days < 0) {
     return 'overdue';
   }
-  
-  // Si está pagado, es 'paid'
+
   if (paymentStatus === 'paid') {
     return 'paid';
   }
-  
-  // Por defecto, es 'pending'
+
   return 'pending';
 };
 
@@ -84,36 +66,19 @@ const getSubscriptionStatus = (
 // CLIENTES CON SUSCRIPCIÓN
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Obtiene todos los clientes con su información de suscripción y plan
- * Combina datos de clientes, suscripciones y planes
- */
 export const getClientsWithSubscription = async (): Promise<ClientWithSubscription[]> => {
   try {
     const clients = await getClients();
-    const subscriptions = await getSubscriptions();
 
     const clientsWithSub = await Promise.all(
       clients.map(async (client) => {
-        // Validar que el cliente tenga ID
         if (!client.id) {
           throw new Error('Cliente sin ID encontrado');
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // Buscar suscripciones del cliente y obtener la más reciente
-        // ═══════════════════════════════════════════════════════════════
-        const clientSubscriptions = subscriptions.filter(
-          (sub) => sub.clientId === client.id
-        );
+        // ✅ Obtener SOLO la suscripción activa (la más reciente)
+        const activeSubscription = await getActiveSubscription(client.id);
 
-        const activeSubscription = clientSubscriptions.sort((a, b) => {
-          const aEnd = safeToDate(a.endDate)?.getTime() || 0;
-          const bEnd = safeToDate(b.endDate)?.getTime() || 0;
-          return bEnd - aEnd;
-        })[0];
-
-        // Si no tiene suscripción, retornar cliente sin plan
         if (!activeSubscription) {
           return {
             id: client.id,
@@ -125,9 +90,6 @@ export const getClientsWithSubscription = async (): Promise<ClientWithSubscripti
           } as ClientWithSubscription;
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // Procesar suscripción y obtener datos del plan
-        // ═══════════════════════════════════════════════════════════════
         const startDate = safeToDate(activeSubscription.startDate);
         const endDate = safeToDate(activeSubscription.endDate);
 
@@ -140,7 +102,6 @@ export const getClientsWithSubscription = async (): Promise<ClientWithSubscripti
           ? calculateDaysUntilExpiration(endDate)
           : 0;
 
-        // Determinar el estado real de la suscripción
         const subscriptionStatus = endDate
           ? getSubscriptionStatus(endDate, activeSubscription.paymentStatus)
           : 'pending';
@@ -151,7 +112,7 @@ export const getClientsWithSubscription = async (): Promise<ClientWithSubscripti
           lastName: client.lastName,
           phoneNumber: client.phoneNumber,
           gender: client.gender,
-          isActive: client.isActive, // Estado del cliente (Activo/Inactivo)
+          isActive: client.isActive,
           currentPlan: plan
             ? {
                 id: plan.id || '',
@@ -166,7 +127,7 @@ export const getClientsWithSubscription = async (): Promise<ClientWithSubscripti
             id: activeSubscription.id || '',
             startDate: startDate || new Date(),
             endDate: endDate || new Date(),
-            paymentStatus: subscriptionStatus, // Estado actualizado
+            paymentStatus: subscriptionStatus,
             lateFee:
               endDate && subscriptionStatus === 'overdue'
                 ? calculateLateFee(endDate)
@@ -185,9 +146,6 @@ export const getClientsWithSubscription = async (): Promise<ClientWithSubscripti
   }
 };
 
-/**
- * Obtiene un cliente específico con su información de suscripción
- */
 export const getClientWithSubscription = async (
   clientId: string
 ): Promise<ClientWithSubscription | null> => {
@@ -201,33 +159,44 @@ export const getClientWithSubscription = async (
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// DASHBOARD STATS
+// DASHBOARD STATS - ARREGLADO
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Obtiene las estadísticas para el dashboard
+ * ✅ ARREGLADO: expiringThisWeek ahora cuenta correctamente
+ * - Usa getActiveSubscription para evitar contar múltiples suscripciones
+ * - Solo cuenta 1 suscripción por cliente
  */
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
     const clients = await getClients();
-    const subscriptions = await getSubscriptions();
     const payments = await getPayments();
 
     const today = new Date();
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    // Total de clientes activos (isActive = true)
+    // ✅ Clientes activos (isActive = true)
     const activeClients = clients.filter((c) => c.isActive).length;
 
-    // Clientes con suscripción que vence esta semana
-    const expiringThisWeek = subscriptions.filter((sub) => {
-      const endDate = safeToDate(sub.endDate);
-      if (!endDate) return false;
-      const days = calculateDaysUntilExpiration(endDate);
-      return days >= 0 && days <= 7;
-    }).length;
+    // ✅ ARREGLADO: Contar clientes con vencimiento esta semana
+    // (Solo una suscripción por cliente, la activa)
+    let expiringThisWeek = 0;
+    for (const client of clients) {
+      if (!client.id) continue;
 
-    // Ingresos del mes actual
+      const activeSubscription = await getActiveSubscription(client.id);
+      if (!activeSubscription) continue;
+
+      const endDate = safeToDate(activeSubscription.endDate);
+      if (!endDate) continue;
+
+      const days = calculateDaysUntilExpiration(endDate);
+      if (days >= 0 && days <= 7) {
+        expiringThisWeek++;
+      }
+    }
+
+    // ✅ Ingresos del mes actual
     const monthlyIncome = payments
       .filter((p) => {
         const payDate = new Date(p.paymentDate);
@@ -235,13 +204,12 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       })
       .reduce((sum, p) => sum + p.amount, 0);
 
-    // Nuevos clientes este mes (placeholder)
     const newClientsThisMonth = 0;
 
     return {
       totalClients: clients.length,
       activeClients,
-      expiringThisWeek,
+      expiringThisWeek, // ✅ AHORA CORRECTO
       monthlyIncome,
       newClientsThisMonth,
     };
@@ -258,12 +226,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// FILTROS: Clientes por estado de suscripción
+// FILTROS
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Obtiene clientes cuya suscripción está por vencer
- */
 export const getExpiringClients = async (
   daysThreshold: number = 7
 ): Promise<ClientWithSubscription[]> => {
@@ -278,9 +243,6 @@ export const getExpiringClients = async (
   });
 };
 
-/**
- * Obtiene clientes con suscripción vencida
- */
 export const getOverdueClients = async (): Promise<ClientWithSubscription[]> => {
   const clients = await getClientsWithSubscription();
 
@@ -290,9 +252,6 @@ export const getOverdueClients = async (): Promise<ClientWithSubscription[]> => 
   });
 };
 
-/**
- * Obtiene clientes inactivos (isActive = false)
- */
 export const getInactiveClients = async (): Promise<ClientWithSubscription[]> => {
   const clients = await getClientsWithSubscription();
   return clients.filter((client) => !client.isActive);

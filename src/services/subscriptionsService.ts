@@ -1,4 +1,10 @@
-// src/services/subscriptionsService.ts - MEJORADO
+// src/services/subscriptionsService.ts - VERSIÓN CORREGIDA
+/**
+ * 🔧 ARREGLADO:
+ * - Ahora renueva la suscripción existente en lugar de crear una nueva
+ * - Evita múltiples suscripciones por cliente
+ * - Calcula correctamente multa y nuevas fechas
+ */
 
 import {
     Timestamp,
@@ -27,51 +33,55 @@ export interface Subscription {
 
 const subscriptionsCollection = collection(db, 'subscriptions');
 
-// 🟢 Crear suscripción (calcula endDate automáticamente)
+// ═══════════════════════════════════════════════════════════════════════════
+// CREAR SUSCRIPCIÓN INICIAL (Solo se llama cuando NO hay suscripción)
+// ═══════════════════════════════════════════════════════════════════════════
 export const createSubscription = async (
     clientId: string,
     planId: string
 ): Promise<string> => {
-    const plan = await getMembershipPlanById(planId);
-    if (!plan) {
-        throw new Error('Plan no encontrado');
+    try {
+        // ✅ PRIMERO: Validar que el cliente NO tenga una suscripción activa
+        const existingSubscription = await getActiveSubscription(clientId);
+        if (existingSubscription) {
+            console.log(`⚠️ Cliente ${clientId} ya tiene una suscripción activa`);
+            return existingSubscription.id || '';
+        }
+
+        const plan = await getMembershipPlanById(planId);
+        if (!plan) {
+            throw new Error('Plan no encontrado');
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // ✅ CREAR: Suscripción con estado "pending" (sin pago aún)
+        const docRef = await addDoc(subscriptionsCollection, {
+            clientId,
+            planId,
+            startDate: Timestamp.fromDate(today),
+            endDate: Timestamp.fromDate(today), // ← Sin sumar días hasta que se pague
+            paymentStatus: 'pending',
+            lateFee: 0,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+        });
+
+        console.log(`
+✅ SUSCRIPCIÓN CREADA (Pendiente de pago):
+   - ID: ${docRef.id}
+   - Cliente: ${clientId}
+   - Plan: ${plan.planName}
+   - Fecha inicio: ${today.toLocaleDateString('es-AR')}
+   - Fecha vencimiento: ${today.toLocaleDateString('es-AR')} (se actualizará al pagar)
+        `);
+
+        return docRef.id;
+    } catch (error) {
+        console.error('❌ Error creating subscription:', error);
+        throw error;
     }
-
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + plan.duration);
-
-    const docRef = await addDoc(subscriptionsCollection, {
-        clientId,
-        planId,
-        startDate: Timestamp.fromDate(startDate),
-        endDate: Timestamp.fromDate(endDate),
-        paymentStatus: 'pending',
-        lateFee: 0,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-    });
-
-    return docRef.id;
-};
-
-// 🟢 Crear suscripción con fechas personalizadas
-export const createSubscriptionWithDates = async (subscription: {
-    clientId: string;
-    planId: string;
-    startDate: Date;
-    endDate: Date;
-    paymentStatus: 'paid' | 'pending' | 'overdue';
-    lateFee: number;
-}): Promise<string> => {
-    const docRef = await addDoc(subscriptionsCollection, {
-        ...subscription,
-        startDate: Timestamp.fromDate(subscription.startDate),
-        endDate: Timestamp.fromDate(subscription.endDate),
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now(),
-    });
-    return docRef.id;
 };
 
 // 🔵 Obtener todas las suscripciones
@@ -95,11 +105,11 @@ export const getSubscriptions = async (): Promise<Subscription[]> => {
 export const getSubscriptionById = async (id: string): Promise<Subscription | null> => {
     const subRef = doc(db, 'subscriptions', id);
     const subSnap = await getDoc(subRef);
-    
+
     if (!subSnap.exists()) {
         return null;
     }
-    
+
     const data = subSnap.data();
     return {
         id: subSnap.id,
@@ -112,13 +122,13 @@ export const getSubscriptionById = async (id: string): Promise<Subscription | nu
     };
 };
 
-// 🔍 Obtener suscripciones de un cliente
+// 🔍 Obtener suscripciones de un cliente (TODAS)
 export const getSubscriptionsByClientId = async (
     clientId: string
 ): Promise<Subscription[]> => {
     const q = query(subscriptionsCollection, where('clientId', '==', clientId));
     const snapshot = await getDocs(q);
-    
+
     return snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -133,70 +143,136 @@ export const getSubscriptionsByClientId = async (
     }) as Subscription[];
 };
 
-// 🔍 Obtener suscripción activa de un cliente
+// 🔍 Obtener suscripción ACTIVA (la más reciente y vigente)
 export const getActiveSubscription = async (
     clientId: string
 ): Promise<Subscription | null> => {
-    const subscriptions = await getSubscriptionsByClientId(clientId);
-    
-    const activeSubscription = subscriptions.find((sub) => {
-        const today = new Date();
-        return sub.endDate >= today && sub.paymentStatus !== 'overdue';
-    });
-    
-    return activeSubscription || null;
+    try {
+        const subscriptions = await getSubscriptionsByClientId(clientId);
+
+        // ✅ Ordenar por fecha de vencimiento descendente (la más reciente primero)
+        const sorted = subscriptions.sort((a, b) => {
+            return new Date(b.endDate).getTime() - new Date(a.endDate).getTime();
+        });
+
+        // ✅ Retornar la primera (la más reciente)
+        return sorted[0] || null;
+    } catch (error) {
+        console.error('❌ Error getting active subscription:', error);
+        return null;
+    }
 };
 
 // 🟡 Actualizar suscripción
 export const updateSubscription = async (id: string, data: any) => {
     const subDoc = doc(db, 'subscriptions', id);
-    
+
     const updateData: any = { ...data };
-    
+
     if (data.startDate instanceof Date) {
         updateData.startDate = Timestamp.fromDate(data.startDate);
     }
     if (data.endDate instanceof Date) {
         updateData.endDate = Timestamp.fromDate(data.endDate);
     }
-    
+
     updateData.updatedAt = Timestamp.now();
-    
+
     await updateDoc(subDoc, updateData);
 };
 
-// NUEVA FUNCIÓN: Renovar fecha de vencimiento
-// ✅ Suma los días del plan a la fecha actual (no a hoy)
-export const renewSubscriptionEndDate = async (subscriptionId: string, daysToAdd: number) => {
+// ═══════════════════════════════════════════════════════════════════════════
+// 📌 FUNCIÓN CLAVE: Renovar suscripción EXISTENTE al registrar pago
+// ✅ ACTUALIZA la suscripción existente (NO crea una nueva)
+// ✅ Calcula multa SI está vencida
+// ✅ Suma 30 días desde la fecha de pago
+// ═══════════════════════════════════════════════════════════════════════════
+export const renewSubscriptionOnPayment = async (
+    subscriptionId: string,
+    paymentDate: Date,
+    planDuration: number = 30
+): Promise<void> => {
     try {
         const subscription = await getSubscriptionById(subscriptionId);
         if (!subscription) {
             throw new Error('Suscripción no encontrada');
         }
 
-        const newEndDate = new Date();
-        newEndDate.setDate(newEndDate.getDate() + daysToAdd);
+        // ✅ Normalizar fechas (sin horas)
+        const paymentDateNormalized = new Date(paymentDate);
+        paymentDateNormalized.setHours(0, 0, 0, 0);
 
+        const currentEndDate = new Date(subscription.endDate);
+        currentEndDate.setHours(0, 0, 0, 0);
+
+        // ✅ Determinar si estaba vencida
+        const isOverdue = currentEndDate < paymentDateNormalized;
+
+        let newEndDate: Date;
+        let lateFee = 0;
+
+        if (isOverdue) {
+            // ═══════════════════════════════════════════════════════════════
+            // ⚠️ CUOTA VENCIDA
+            // ═══════════════════════════════════════════════════════════════
+            const daysOverdue = Math.floor(
+                (paymentDateNormalized.getTime() - currentEndDate.getTime()) /
+                    (1000 * 60 * 60 * 24)
+            );
+
+            // ✅ Calcular multa: $500 por día
+            lateFee = daysOverdue * 500;
+
+            // ✅ Nueva fecha = fecha de pago + duración del plan
+            newEndDate = new Date(paymentDateNormalized);
+            newEndDate.setDate(newEndDate.getDate() + planDuration);
+
+            console.log(`
+⚠️ CUOTA VENCIDA - RENOVACIÓN:
+   - Vencimiento anterior: ${currentEndDate.toLocaleDateString('es-AR')}
+   - Fecha de pago: ${paymentDateNormalized.toLocaleDateString('es-AR')}
+   - Días de atraso: ${daysOverdue}
+   - MULTA: $${lateFee.toLocaleString('es-AR')} (${daysOverdue} días × $500)
+   - Nuevo vencimiento: ${newEndDate.toLocaleDateString('es-AR')}
+   - Días agregados: ${planDuration}
+            `);
+        } else {
+            // ═══════════════════════════════════════════════════════════════
+            // ✅ CUOTA VIGENTE O PRIMER PAGO
+            // ═══════════════════════════════════════════════════════════════
+            newEndDate = new Date(paymentDateNormalized);
+            newEndDate.setDate(newEndDate.getDate() + planDuration);
+            lateFee = 0;
+
+            console.log(`
+✅ CUOTA VIGENTE - RENOVACIÓN:
+   - Vencimiento anterior: ${currentEndDate.toLocaleDateString('es-AR')}
+   - Fecha de pago: ${paymentDateNormalized.toLocaleDateString('es-AR')}
+   - Nuevo vencimiento: ${newEndDate.toLocaleDateString('es-AR')}
+   - Multa: $0 (cuota vigente)
+   - Días agregados: ${planDuration}
+            `);
+        }
+
+        // ✅ ACTUALIZAR (no crear nueva)
         await updateSubscription(subscriptionId, {
             endDate: newEndDate,
             paymentStatus: 'paid',
-            lateFee: 0,
+            lateFee: lateFee,
         });
 
-        console.log(`✅ Suscripción ${subscriptionId} renovada hasta ${newEndDate.toLocaleDateString('es-AR')}`);
+        console.log(`✅ Suscripción ${subscriptionId} renovada correctamente`);
     } catch (error) {
         console.error('❌ Error renovando suscripción:', error);
         throw error;
     }
 };
 
-// 📌 NUEVA FUNCIÓN: Desactivar todas las suscripciones de un cliente
-// ✅ Se llama cuando se da de baja un cliente
+// 📌 Desactivar todas las suscripciones de un cliente
 export const deactivateClientSubscriptions = async (clientId: string) => {
     try {
         const subscriptions = await getSubscriptionsByClientId(clientId);
 
-        // Marcar todas las suscripciones como 'overdue'
         await Promise.all(
             subscriptions.map((sub) =>
                 updateSubscription(sub.id || '', {
@@ -212,73 +288,8 @@ export const deactivateClientSubscriptions = async (clientId: string) => {
     }
 };
 
-
-
-// 🔄 Renovar suscripción al registrar un pago
-export const renewSubscriptionOnPayment = async (
-    subscriptionId: string,
-    paymentDate: Date,
-    planDuration: number = 30
-): Promise<void> => {
-    try {
-        const subscription = await getSubscriptionById(subscriptionId);
-        if (!subscription) {
-            throw new Error('Suscripción no encontrada');
-        }
-
-        // 📌 Determinar si está vencida
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        const endDate = new Date(subscription.endDate);
-        endDate.setHours(0, 0, 0, 0);
-
-        const isOverdue = endDate < today;
-
-        let newEndDate: Date;
-// Calcular nueva fecha de vencimiento
-// Dependiendo si la cuota estaba vencida o no
-        if (isOverdue) {
-            //Cuota VENCIDA → endDate = paymentDate + 30 días
-            console.log(`⚠️ Cuota vencida. Renovando desde fecha de pago: ${paymentDate.toLocaleDateString('es-AR')}`);
-            newEndDate = new Date(paymentDate);
-            newEndDate.setDate(newEndDate.getDate() + planDuration);
-        } else {
-            //Cuota NO vencida → endDate = endDate actual + 30 días
-            console.log(`✅ Cuota vigente. Renovando desde endDate actual: ${endDate.toLocaleDateString('es-AR')}`);
-            newEndDate = new Date(endDate);
-            newEndDate.setDate(newEndDate.getDate() + planDuration);
-        }
-
-        // Actualizar la suscripción
-        await updateSubscription(subscriptionId, {
-            endDate: newEndDate,
-            paymentStatus: 'paid',
-            lateFee: 0,
-        });
-
-        console.log(`
-✅ Suscripción renovada:
-   - Fecha de pago: ${paymentDate.toLocaleDateString('es-AR')}
-   - Nuevo vencimiento: ${newEndDate.toLocaleDateString('es-AR')}
-   - Duración: ${planDuration} días
-   - Estado anterior: ${isOverdue ? 'VENCIDA' : 'VIGENTE'}
-        `);
-    } catch (error) {
-        console.error('❌ Error renovando suscripción al pagar:', error);
-        throw error;
-    }
-};
-//  Eliminar suscripción
+// 🔴 Eliminar suscripción
 export const deleteSubscription = async (id: string) => {
     const subDoc = doc(db, 'subscriptions', id);
     await deleteDoc(subDoc);
-};
-
-// 🔄 Renovar suscripción (crea una nueva basada en la anterior)
-export const renewSubscription = async (
-    clientId: string,
-    planId: string
-): Promise<string> => {
-    return await createSubscription(clientId, planId);
 };
