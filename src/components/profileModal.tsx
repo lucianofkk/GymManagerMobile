@@ -1,19 +1,7 @@
-// src/components/profileModal.tsx - CON LUCIDE ICONS
+// src/components/profileModal.tsx - CON MATERIAL COMMUNITY ICONS
 import { ClientWithSubscription } from '@/types/type';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Edit,
-  Phone,
-  Plus,
-  RefreshCw,
-  User,
-  X
-} from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { getClientWithSubscription } from '../services/businessLogic';
@@ -27,39 +15,37 @@ interface ProfileModalProps {
   onClose: () => void;
 }
 
-// 📌 MAPEO DE ICONOS LUCIDE
-const IconComponents = {
-  close: X,
-  user: User,
-  phone: Phone,
-  dumbbell: User, // Usamos User como placeholder para "gym"
-  alert: AlertCircle,
-  calendar: Calendar,
-  edit: Edit,
-  plus: Plus,
-  refresh: RefreshCw,
-  checkCircle: CheckCircle,
-  dollarSign: DollarSign,
-  clock: Clock,
+// 📌 MAPEO DE ICONOS MATERIAL COMMUNITY
+const IconNames = {
+  close: 'close',
+  user: 'account',
+  phone: 'phone',
+  gym: 'dumbbell',
+  alert: 'alert-circle',
+  calendar: 'calendar',
+  edit: 'pencil',
+  plus: 'plus',
+  refresh: 'refresh',
+  checkCircle: 'check-circle',
+  dollarSign: 'cash',
+  clock: 'clock-outline',
 };
 
-// 📌 COMPONENTE HELPER: Icono Lucide personalizado
-interface LucideIconProps {
-  Icon: typeof X;
+// 📌 COMPONENTE HELPER: Icono Material Community personalizado
+interface MaterialIconProps {
+  name: string;
   size?: number;
   color?: string;
   style?: any;
 }
 
-const LucideIcon: React.FC<LucideIconProps> = ({
-  Icon,
+const MaterialIcon: React.FC<MaterialIconProps> = ({
+  name,
   size = 24,
   color = '#1E40AF',
   style,
 }) => (
-  <View style={[{ width: size, height: size }, style]}>
-    <Icon size={size} color={color} strokeWidth={1.5} />
-  </View>
+  <MaterialCommunityIcons name={name as any} size={size} color={color} style={style} />
 );
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -145,7 +131,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             {/* HEADER: Cerrar modal */}
             <View style={styles.modalHeader}>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <LucideIcon Icon={IconComponents.close} size={24} color="#6B7280" />
+                <MaterialIcon name={IconNames.close} size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
@@ -157,8 +143,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <View style={styles.profileSection}>
                   <View style={styles.modalAvatarContainer}>
                     <View style={styles.modalAvatar}>
-                      <LucideIcon
-                        Icon={IconComponents.user}
+                      <MaterialIcon
+                        name={IconNames.user}
                         size={40}
                         color="#1E40AF"
                       />
@@ -172,8 +158,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                     {/* Teléfono */}
                     <View style={styles.contactRow}>
-                      <LucideIcon
-                        Icon={IconComponents.phone}
+                      <MaterialIcon
+                        name={IconNames.phone}
                         size={16}
                         color="#6B7280"
                       />
@@ -186,8 +172,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     {member.currentPlan ? (
                       <View style={styles.planInfoContainer}>
                         <View style={styles.planNameRow}>
-                          <LucideIcon
-                            Icon={IconComponents.dumbbell}
+                          <MaterialIcon
+                            name={IconNames.gym}
                             size={16}
                             color="#1E40AF"
                           />
@@ -201,8 +187,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       </View>
                     ) : (
                       <View style={styles.noPlanContainer}>
-                        <LucideIcon
-                          Icon={IconComponents.alert}
+                        <MaterialIcon
+                          name={IconNames.alert}
                           size={16}
                           color="#92400E"
                         />
@@ -221,13 +207,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           { backgroundColor: paymentStatus.bgColor },
                         ]}
                       >
-                        <LucideIcon
-                          Icon={
+                        <MaterialIcon
+                          name={
                             paymentStatus.text === 'PAGADA'
-                              ? IconComponents.checkCircle
+                              ? IconNames.checkCircle
                               : paymentStatus.text === 'VENCIDA'
-                              ? IconComponents.alert
-                              : IconComponents.clock
+                              ? IconNames.alert
+                              : IconNames.clock
                           }
                           size={14}
                           color={paymentStatus.color}
@@ -246,11 +232,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     {/* Días hasta vencimiento */}
                     {member.daysUntilExpiration !== undefined && member.subscription && (
                       <View style={styles.expirationContainer}>
-                        <LucideIcon
-                          Icon={
+                        <MaterialIcon
+                          name={
                             member.daysUntilExpiration < 0
-                              ? IconComponents.alert
-                              : IconComponents.calendar
+                              ? IconNames.alert
+                              : IconNames.calendar
                           }
                           size={16}
                           color={
@@ -284,7 +270,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   style={[styles.actionButton, styles.editButton]}
                   onPress={handleEditProfile}
                 >
-                  <LucideIcon Icon={IconComponents.edit} size={18} color="#1E40AF" />
+                  <MaterialIcon name={IconNames.edit} size={18} color="#ffffffff" />
                   <Text style={styles.actionButtonText}>Editar Perfil</Text>
                 </TouchableOpacity>
 
@@ -297,7 +283,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       style={[styles.actionButton, styles.primaryButton]}
                       onPress={() => setShowAssignPlan(true)}
                     >
-                      <LucideIcon Icon={IconComponents.plus} size={18} color="white" />
+                      <MaterialIcon name={IconNames.plus} size={18} color="white" />
                       <Text style={styles.actionButtonText}>Asignar Plan</Text>
                     </TouchableOpacity>
                   )}
@@ -309,8 +295,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           style={[styles.actionButton, styles.successButton]}
                           onPress={() => setShowRegisterPayment(true)}
                         >
-                          <LucideIcon
-                            Icon={IconComponents.dollarSign}
+                          <MaterialIcon
+                            name={IconNames.dollarSign}
                             size={18}
                             color="white"
                           />
@@ -323,8 +309,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                           style={[styles.actionButton, styles.warningButton]}
                           onPress={() => setShowAssignPlan(true)}
                         >
-                          <LucideIcon
-                            Icon={IconComponents.refresh}
+                          <MaterialIcon
+                            name={IconNames.refresh}
                             size={18}
                             color="white"
                           />
@@ -345,11 +331,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>Estado Cliente:</Text>
                     <View style={styles.infoValueContainer}>
-                      <LucideIcon
-                        Icon={
+                      <MaterialIcon
+                        name={
                           member.isActive
-                            ? IconComponents.checkCircle
-                            : IconComponents.alert
+                            ? IconNames.checkCircle
+                            : IconNames.alert
                         }
                         size={16}
                         color={member.isActive ? '#10B981' : '#EF4444'}
@@ -379,8 +365,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Inicio:</Text>
                         <View style={styles.infoValueContainer}>
-                          <LucideIcon
-                            Icon={IconComponents.calendar}
+                          <MaterialIcon
+                            name={IconNames.calendar}
                             size={16}
                             color="#6B7280"
                           />
@@ -394,8 +380,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Vencimiento:</Text>
                         <View style={styles.infoValueContainer}>
-                          <LucideIcon
-                            Icon={IconComponents.calendar}
+                          <MaterialIcon
+                            name={IconNames.calendar}
                             size={16}
                             color="#6B7280"
                           />

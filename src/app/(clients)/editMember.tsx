@@ -273,7 +273,7 @@ export default function EditMemberScreen() {
             }}
             disabled={saving}
           >
-            <Text style={styles.actionButtonText}>🛑 Dar de Baja</Text>
+            <Text style={styles.actionButtonText}> Dar de Baja</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -284,7 +284,7 @@ export default function EditMemberScreen() {
             }}
             disabled={saving}
           >
-            <Text style={styles.actionButtonText}>✅ Reactivar</Text>
+            <Text style={styles.actionButtonText}>Reactivar</Text>
           </TouchableOpacity>
         )}
 

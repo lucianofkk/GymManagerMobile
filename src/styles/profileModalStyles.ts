@@ -256,7 +256,7 @@ export const styles = StyleSheet.create({
 
   // Botón Editar (Azul principal)
   editButton: {
-    backgroundColor: '#1E40AF',
+    backgroundColor: '#2e68e7ff',
     borderWidth: 1,
     borderColor: '#1E40AF',
   },
