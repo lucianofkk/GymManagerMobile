@@ -5,6 +5,7 @@ import { Tabs } from 'expo-router';
 // ═══════════════════════════════════════════════════════════════════════════
 // BOTTOM TAB NAVIGATION - GYM MANAGER
 // Orden: Dashboard | Pagos | Clientes | Cuotas | Acerca
+// Con barra inferior azul
 // ═══════════════════════════════════════════════════════════════════════════
 
 export default function TabsLayout() {
@@ -17,25 +18,24 @@ export default function TabsLayout() {
         headerShown: false,
 
         // ═══════════════════════════════════════════════════════════════
-        // COLOR ACTIVO - Azul principal del app
+        // COLOR ACTIVO - Blanco (contrasta bien en fondo azul)
         // Aplicado a iconos y texto cuando pestaña está seleccionada
         // ═══════════════════════════════════════════════════════════════
-        tabBarActiveTintColor: '#1E40AF',
+        tabBarActiveTintColor: '#FFFFFF',
 
         // ═══════════════════════════════════════════════════════════════
-        // COLOR INACTIVO - Gris neutro
+        // COLOR INACTIVO - Gris claro (visible en fondo azul)
         // Aplicado cuando la pestaña NO está seleccionada
         // ═══════════════════════════════════════════════════════════════
-        tabBarInactiveTintColor: '#6B7280',
+        tabBarInactiveTintColor: '#D1D5DB',
 
         // ═══════════════════════════════════════════════════════════════
         // ESTILOS DE LA BARRA DE NAVEGACIÓN
-        // Fondo blanco, borde superior suave
+        // Fondo azul, sin borde superior (se integra mejor)
         // ═══════════════════════════════════════════════════════════════
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
+          backgroundColor: '#1E40AF',
+          borderTopWidth: 0,
         },
       }}
     >

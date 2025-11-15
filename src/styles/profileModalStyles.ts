@@ -188,6 +188,10 @@ export const styles = StyleSheet.create({
 
   quotaLabelModal: {
     fontSize: 10,
+    marginLeft: -80,
+    borderLeftColor: '#6B7280',
+    borderLeftWidth: 2,
+    paddingLeft: 6,
     fontWeight: '700',
     color: '#6B7280',
     textTransform: 'uppercase',

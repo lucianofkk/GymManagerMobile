@@ -1,5 +1,4 @@
-// src/components/AssignPlanModal.tsx - CON VALIDACIÓN DE CLIENTE ACTIVO
-
+// src/components/AssignPlanModal.tsx - ARREGLADO PARA MOBILE
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -38,12 +37,14 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [assigning, setAssigning] = useState(false);
   const [clientIsActive, setClientIsActive] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 📌 Cargar datos cuando se abre el modal
   useEffect(() => {
     if (visible) {
       setPlans([]);
       setSelectedPlan(null);
+      setError(null);
       loadData();
     }
   }, [visible]);
@@ -52,11 +53,13 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
       // 1️⃣ Obtener datos del cliente para verificar si está activo
       const client = await getClientById(clientId);
-      
+
       if (!client) {
+        setError('Cliente no encontrado');
         Alert.alert('Error', 'Cliente no encontrado');
         onClose();
         return;
@@ -65,6 +68,7 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
       // 2️⃣ VALIDACIÓN: Si el cliente NO está activo, mostrar error
       if (!client.isActive) {
         setClientIsActive(false);
+        setError('Cliente inactivo');
         Alert.alert(
           '❌ Cliente Inactivo',
           `No se puede asignar planes a ${clientName} porque está dado de baja.\n\nPor favor reactiva el cliente primero.`,
@@ -90,11 +94,13 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
       setPlans(activePlans);
 
       if (activePlans.length === 0) {
-        Alert.alert('Información', 'No hay planes disponibles');
+        setError('No hay planes disponibles');
       }
-    } catch (error) {
-      console.error('❌ Error loading data:', error);
-      Alert.alert('Error', 'No se pudieron cargar los datos');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('❌ Error loading data:', errorMessage);
+      setError(errorMessage);
+      Alert.alert('Error', `No se pudieron cargar los datos: ${errorMessage}`);
       onClose();
     } finally {
       setLoading(false);
@@ -134,9 +140,10 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
           },
         ]
       );
-    } catch (error) {
-      console.error('Error assigning plan:', error);
-      Alert.alert('Error', 'No se pudo asignar el plan');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Error assigning plan:', errorMessage);
+      Alert.alert('Error', `No se pudo asignar el plan: ${errorMessage}`);
     } finally {
       setAssigning(false);
     }
@@ -185,15 +192,20 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
             </View>
           </View>
 
-          {/* Lista de planes */}
-          <ScrollView style={styles.plansContainer} showsVerticalScrollIndicator={false}>
-            {loading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#1E40AF" />
-                <Text style={styles.loadingText}>Cargando planes...</Text>
-              </View>
-            ) : clientIsActive && plans.length > 0 ? (
-              plans.map((plan) => (
+          {/* ✅ ARREGLADO: Reemplazar ScrollView con View + condicionales */}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#1E40AF" />
+              <Text style={styles.loadingText}>Cargando planes...</Text>
+            </View>
+          ) : clientIsActive && plans.length > 0 ? (
+            // ✅ PLANES DISPONIBLES
+            <ScrollView
+              style={styles.plansContainer}
+              showsVerticalScrollIndicator={false}
+              scrollEventThrottle={16}
+            >
+              {plans.map((plan) => (
                 <TouchableOpacity
                   key={plan.id}
                   style={[
@@ -222,18 +234,22 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                     <Text style={styles.planDuration}>{plan.duration} días</Text>
                   </View>
                 </TouchableOpacity>
-              ))
-            ) : !clientIsActive ? (
+              ))}
+            </ScrollView>
+          ) : !clientIsActive ? (
+            // ❌ CLIENTE INACTIVO
+            <View style={styles.emptyContainer}>
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateIcon}>🚫</Text>
-                <Text style={styles.emptyStateText}>
-                  Cliente inactivo
-                </Text>
+                <Text style={styles.emptyStateText}>Cliente inactivo</Text>
                 <Text style={styles.emptyStateSubtext}>
                   No se puede asignar planes a un cliente dado de baja
                 </Text>
               </View>
-            ) : (
+            </View>
+          ) : (
+            // 📋 SIN PLANES DISPONIBLES
+            <View style={styles.emptyContainer}>
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateIcon}>📋</Text>
                 <Text style={styles.emptyStateText}>
@@ -243,14 +259,15 @@ export const AssignPlanModal: React.FC<AssignPlanModalProps> = ({
                   Crea planes en la sección de administración
                 </Text>
               </View>
-            )}
-          </ScrollView>
+            </View>
+          )}
 
           {/* Botón asignar */}
           <TouchableOpacity
             style={[
               styles.assignButton,
-              (!selectedPlan || assigning || !clientIsActive) && styles.assignButtonDisabled,
+              (!selectedPlan || assigning || !clientIsActive) &&
+                styles.assignButtonDisabled,
             ]}
             onPress={handleAssignPlan}
             disabled={!selectedPlan || assigning || !clientIsActive}
@@ -285,7 +302,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 40,
-    maxHeight: '80%',
+    maxHeight: '85%',
+    // ✅ ARREGLADO: Asegurar que el contenedor tenga height definida
+    height: '85%',
   },
   header: {
     flexDirection: 'row',
@@ -337,9 +356,17 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 20,
   },
-  loadingContainer: {
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 40,
+    marginBottom: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   loadingText: {
     marginTop: 8,
@@ -422,6 +449,8 @@ const styles = StyleSheet.create({
   emptyStateSubtext: {
     fontSize: 14,
     color: '#6B7280',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   assignButton: {
     backgroundColor: '#1E40AF',

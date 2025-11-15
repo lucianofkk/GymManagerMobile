@@ -1,14 +1,26 @@
-// src/styles/dashboardScreenStyles.ts
+// src/styles/dashboardScreenStyles.ts - ESTILOS COMPLETOS ARREGLADOS
+
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
     // ═══════════════════════════════════════════════════════════════
-    // CONTENEDOR PRINCIPAL - Fondo gradual moderno
+    // CONTENEDOR PRINCIPAL - Fondo limpio sin gradientes
     // ═══════════════════════════════════════════════════════════════
     container: {
         flex: 1,
         backgroundColor: '#e6eff9ff',
     },
+
+    // ═══════════════════════════════════════════════════════════════
+    // SCROLL VIEW - Contenedor de scroll
+    // ═══════════════════════════════════════════════════════════════
+    scrollView: {
+        flex: 1,
+    },
+
+    // ═══════════════════════════════════════════════════════════════
+    // ICONO CONTAINER - Para los iconos en las tarjetas
+    // ═══════════════════════════════════════════════════════════════
     iconContainer: {
         width: 36,
         height: 36,
@@ -17,51 +29,51 @@ export const styles = StyleSheet.create({
         backgroundColor: 'transparent',
         borderRadius: 8,
     },
-    scrollView: {
-        flex: 1,
-    },
 
     // ═══════════════════════════════════════════════════════════════
-    // HEADER - Saludo y fecha con gradiente premium
+    // HEADER - Saludo, título y fecha con fondo blanco
     // ═══════════════════════════════════════════════════════════════
     header: {
-        backgroundColor: 'linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%)',
+        backgroundColor: '#FFFFFF',
         paddingHorizontal: 24,
         paddingTop: 24,
         paddingBottom: 32,
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
-        shadowColor: '#1E40AF',
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 8,
+            height: 4,
         },
-        shadowOpacity: 0.3,
-        shadowRadius: 16,
-        elevation: 10,
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 4,
     },
+
     welcomeText: {
         fontSize: 16,
-        color: 'rgba(0, 0, 0, 0.85)',
+        color: '#6B7280',
         marginBottom: 8,
         fontWeight: '500',
     },
+
     gymTitle: {
         fontSize: 32,
         fontWeight: '800',
-        color: '#000000ff',
+        color: '#111827',
         marginBottom: 8,
         letterSpacing: -0.5,
     },
+
     dateText: {
         fontSize: 14,
-        color: 'rgba(0, 0, 0, 0.75)',
+        color: '#9CA3AF',
         textTransform: 'capitalize',
         fontWeight: '500',
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // ESTADO DE CARGA - Contenedor visual mejorado
+    // LOADING CONTAINER - Indicador de carga
     // ═══════════════════════════════════════════════════════════════
     loadingContainer: {
         alignItems: 'center',
@@ -72,6 +84,7 @@ export const styles = StyleSheet.create({
         marginHorizontal: 20,
         marginVertical: 40,
     },
+
     loadingText: {
         fontSize: 16,
         color: '#4B5563',
@@ -80,51 +93,54 @@ export const styles = StyleSheet.create({
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // TARJETAS DE ESTADÍSTICAS - Diseño moderno con bordes TOP
+    // TARJETAS DE ESTADÍSTICAS - Diseño moderno con borde TOP
     // ═══════════════════════════════════════════════════════════════
     statsContainer: {
         padding: 20,
         gap: 14,
     },
+
     statsCard: {
-        backgroundColor: '#ffffffff',
+        backgroundColor: '#FFFFFF',
         borderRadius: 20,
         padding: 20,
         borderTopWidth: 5,
-        shadowColor: '#003cffff',
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 2,
         },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 5,
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
         overflow: 'hidden',
     },
+
     statsContent: {
         flex: 1,
     },
+
     statsHeader: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 12,
     },
-    statsIcon: {
-        fontSize: 24,
-        marginRight: 10,
-    },
+
     statsTitle: {
         fontSize: 14,
-        color: '#4B5563',
+        color: '#6B7280',
         fontWeight: '600',
         letterSpacing: -0.2,
+        flex: 1,
     },
+
     statsValue: {
         fontSize: 28,
         fontWeight: '900',
         marginBottom: 6,
         letterSpacing: -0.8,
     },
+
     statsSubtitle: {
         fontSize: 12,
         color: '#9CA3AF',
@@ -132,18 +148,13 @@ export const styles = StyleSheet.create({
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // ACCESOS RÁPIDOS - Botones con gradientes y sombras
+    // ACCESOS RÁPIDOS - Botones con sombras
     // ═══════════════════════════════════════════════════════════════
     quickActionsContainer: {
         paddingHorizontal: 20,
         marginBottom: 28,
     },
-    quickActionIconContainer: {
-        width: 50,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+
     sectionTitle: {
         fontSize: 20,
         fontWeight: '800',
@@ -151,11 +162,13 @@ export const styles = StyleSheet.create({
         marginBottom: 18,
         letterSpacing: -0.3,
     },
+
     quickActionsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 12,
     },
+
     quickAction: {
         flex: 1,
         borderRadius: 16,
@@ -171,25 +184,24 @@ export const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: 'rgba(255, 255, 255, 0.4)',
     },
-    quickActionIcon: {
-        fontSize: 28,
-        marginBottom: 8,
-    },
+
     quickActionText: {
         color: 'white',
         fontSize: 12,
         fontWeight: '700',
         textAlign: 'center',
         letterSpacing: -0.2,
+        marginTop: 8,
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // ACTIVIDAD RECIENTE - Contenedor moderno con bordes
+    // ACTIVIDAD RECIENTE - Contenedor moderno
     // ═══════════════════════════════════════════════════════════════
     activitiesContainer: {
-        paddingHorizontal: 60,
+        paddingHorizontal: 20,
         paddingBottom: 40,
     },
+
     activityIconContainer: {
         width: 40,
         height: 40,
@@ -197,7 +209,9 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: '#EFF6FF',
         borderRadius: 8,
+        marginRight: 12,
     },
+
     activitiesList: {
         backgroundColor: '#FFFFFF',
         borderRadius: 20,
@@ -205,35 +219,35 @@ export const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 2,
         },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 5,
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 3,
         borderTopWidth: 5,
         borderTopColor: '#1E40AF',
         overflow: 'hidden',
     },
+
     activityItem: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        borderBottomWidth: 1.5,
+        borderBottomWidth: 1,
         borderBottomColor: '#F3F4F6',
     },
-    activityIcon: {
-        fontSize: 22,
-        marginRight: 14,
-    },
+
     activityContent: {
         flex: 1,
     },
+
     activityText: {
         fontSize: 14,
         color: '#111827',
         fontWeight: '600',
         marginBottom: 4,
     },
+
     activityDate: {
         fontSize: 12,
         color: '#9CA3AF',
@@ -241,7 +255,7 @@ export const styles = StyleSheet.create({
     },
 
     // ═══════════════════════════════════════════════════════════════
-    // ESTADO VACÍO - Diseño atractivo con borde punteado
+    // ESTADO VACÍO - Diseño atractivo
     // ═══════════════════════════════════════════════════════════════
     emptyActivities: {
         alignItems: 'center',
@@ -256,25 +270,25 @@ export const styles = StyleSheet.create({
         borderStyle: 'dashed',
         borderColor: '#E5E7EB',
     },
+
     emptyActivitiesIcon: {
         fontSize: 56,
         marginBottom: 16,
         opacity: 0.6,
     },
+
     emptyActivitiesText: {
         fontSize: 18,
         fontWeight: '800',
-        color: '#ff0000ff',
+        color: '#111827',
         marginBottom: 6,
         letterSpacing: -0.3,
     },
+
     emptyActivitiesSubtext: {
         fontSize: 14,
         color: '#6B7280',
         textAlign: 'center',
         fontWeight: '500',
     },
-
-
-    
 });

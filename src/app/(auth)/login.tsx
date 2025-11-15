@@ -1,19 +1,17 @@
-// src/app/(auth)/login.tsx
+// src/app/(auth)/login.tsx - SIN STATUSBAR (YA ESTÁ GLOBAL)
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   SafeAreaView,
-  StatusBar,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import UserIcon from '../../assets/images/LogoPNG.png';
 import { auth } from '../../services/firebaseConfig';
@@ -43,19 +41,18 @@ const LoginScreen = () => {
       // 🔐 AUTENTICAR CON FIREBASE
       console.log('🔐 Intentando login con:', email);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
+
       console.log('✅ Login exitoso:', userCredential.user.email);
       Alert.alert('Éxito', 'Sesión iniciada correctamente');
-      
+
       // El AuthContext detectará el cambio automáticamente
       // y redirigirá al dashboard
-      
     } catch (error: any) {
       console.error('❌ Error de login:', error.code, error.message);
-      
+
       // Manejo de errores específicos de Firebase
       let errorMessage = 'Credenciales incorrectas';
-      
+
       if (error.code === 'auth/user-not-found') {
         errorMessage = 'El usuario no existe';
       } else if (error.code === 'auth/wrong-password') {
@@ -65,7 +62,7 @@ const LoginScreen = () => {
       } else if (error.code === 'auth/user-disabled') {
         errorMessage = 'El usuario ha sido deshabilitado';
       }
-      
+
       Alert.alert('Error de autenticación', errorMessage);
     } finally {
       setLoading(false);
@@ -94,11 +91,15 @@ const LoginScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1E40AF" />
+      {/* ✅ StatusBar ya está configurado globalmente en _layout.tsx */}
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+      {/* ✅ ARREGLADO: ScrollView en lugar de KeyboardAvoidingView */}
+      {/* ScrollView maneja automáticamente el teclado sin bugs */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        scrollEnabled={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* HEADER CON LOGO */}
         <View style={styles.header}>
@@ -163,6 +164,7 @@ const LoginScreen = () => {
             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            activeOpacity={0.8}
           >
             {loading ? (
               <ActivityIndicator color="white" size="small" />
@@ -181,13 +183,16 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* FOOTER */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Versión 1.0.0 • Desarrollado para tu gimnasio
-          </Text>
-        </View>
-      </KeyboardAvoidingView>
+        {/* SPACER para empujar el footer hacia abajo */}
+        <View style={styles.spacer} />
+      </ScrollView>
+
+      {/* ✅ ARREGLADO: Footer fijo en la parte inferior */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>
+          Versión 1.0.0 • Desarrollado para tu gimnasio
+        </Text>
+      </View>
     </SafeAreaView>
   );
 };
@@ -197,14 +202,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1E40AF',
   },
-  keyboardView: {
+  // ✅ ARREGLADO: ScrollView sin comportamientos erráticos
+  scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   header: {
-    flex: 0.4,
+    minHeight: 280,
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 20,
+    paddingBottom: 30,
   },
   logoContainer: {
     alignItems: 'center',
@@ -217,6 +227,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   gymName: {
     fontSize: 28,
@@ -229,12 +247,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   formContainer: {
-    flex: 0.6,
     backgroundColor: 'white',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 30,
     paddingTop: 40,
+    paddingBottom: 30,
   },
   inputContainer: {
     marginBottom: 20,
@@ -293,6 +311,7 @@ const styles = StyleSheet.create({
   },
   loginButtonDisabled: {
     backgroundColor: '#9CA3AF',
+    shadowOpacity: 0.1,
   },
   loginButtonText: {
     color: 'white',
@@ -302,28 +321,32 @@ const styles = StyleSheet.create({
   forgotPasswordButton: {
     alignItems: 'center',
     marginTop: 20,
+    paddingVertical: 10,
   },
   forgotPasswordText: {
     color: '#1E40AF',
     fontSize: 16,
     fontWeight: '500',
   },
-footer: {
-  backgroundColor: '#1E40AF',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 10,
-  width: '100%',
-  position: 'absolute',
-  bottom: 0,
-},
-
-footerText: {
-  color: 'rgba(255, 255, 255, 0.9)',
-  fontSize: 12,
-  textAlign: 'center',
-},
-
+  // ✅ ARREGLADO: Spacer flexible
+  spacer: {
+    flex: 1,
+  },
+  // ✅ ARREGLADO: Footer absolutamente posicionado
+  footer: {
+    backgroundColor: '#1E40AF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  footerText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 12,
+    textAlign: 'center',
+  },
 });
 
 export default LoginScreen;

@@ -1,4 +1,4 @@
-// src/app/(tabs)/dashboard.tsx - CON IONICONS
+// src/app/(tabs)/dashboard.tsx - CÓDIGO COMPLETO ARREGLADO
 
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +9,6 @@ import {
     Dimensions,
     RefreshControl,
     ScrollView,
-    StatusBar,
     Text,
     TouchableOpacity,
     View,
@@ -36,7 +35,7 @@ const ACTIVITY_ICON_MAP = {
 };
 
 // ============ COMPONENTE STATS CARD ============
-// 📌 CAMBIO: Ahora usa Ionicons en lugar de componentes
+// 📌 Tarjeta de estadísticas con icono, valor y descripción
 const StatsCard = ({
     title,
     value,
@@ -53,13 +52,12 @@ const StatsCard = ({
     onPress?: () => void;
 }) => (
     <TouchableOpacity
-        style={[styles.statsCard, { borderLeftColor: color }]}
+        style={[styles.statsCard, { borderTopColor: color }]}
         onPress={onPress}
         activeOpacity={0.7}
     >
         <View style={styles.statsContent}>
             <View style={styles.statsHeader}>
-                {/* 📌 CAMBIO: Usar Ionicons directamente */}
                 <View style={styles.iconContainer}>
                     <Ionicons name={iconName} size={24} color={color} />
                 </View>
@@ -72,7 +70,7 @@ const StatsCard = ({
 );
 
 // ============ COMPONENTE QUICK ACTION ============
-// 📌 CAMBIO: Ahora usa Ionicons
+// 📌 Botón de acción rápida con icono y texto
 const QuickActionButton = ({
     title,
     iconName,
@@ -89,16 +87,14 @@ const QuickActionButton = ({
         onPress={onPress}
         activeOpacity={0.8}
     >
-        {/* 📌 CAMBIO: Usar Ionicons directamente */}
         <Ionicons name={iconName} size={32} color="white" />
         <Text style={styles.quickActionText}>{title}</Text>
     </TouchableOpacity>
 );
 
 // ============ COMPONENTE ACTIVITY ITEM ============
-// 📌 CAMBIO PRINCIPAL: Busca icono en mapeo
+// 📌 Elemento de actividad reciente con icono y descripción
 const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
-    // Obtener el nombre del icono según el tipo
     const iconName = ACTIVITY_ICON_MAP[activity.type] || 'alert-circle';
 
     const getActivityText = (activity: RecentActivity) => {
@@ -118,7 +114,6 @@ const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
 
     return (
         <View style={styles.activityItem}>
-            {/* 📌 CAMBIO: Usar Ionicons directamente */}
             <View style={styles.activityIconContainer}>
                 <Ionicons name={iconName as keyof typeof Ionicons.glyphMap} size={20} color="#1E40AF" />
             </View>
@@ -131,6 +126,7 @@ const ActivityItem = ({ activity }: { activity: RecentActivity }) => {
 };
 
 // ============ DASHBOARD SCREEN ============
+// 📌 Pantalla principal del dashboard con estadísticas y actividades
 const DashboardScreen = () => {
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -143,22 +139,23 @@ const DashboardScreen = () => {
     });
     const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
 
-    // Cargar datos cuando la pantalla se enfoca
+    // ✅ Cargar datos cuando la pantalla se enfoca
     useFocusEffect(
         useCallback(() => {
             loadDashboardData();
         }, [])
     );
 
+    // ✅ Función para cargar datos del dashboard
     const loadDashboardData = async () => {
         try {
             setLoading(true);
 
-            // ✅ Obtener estadísticas
+            // Obtener estadísticas
             const dashboardStats = await getDashboardStats();
             setStats(dashboardStats);
 
-            // ✅ Obtener datos para actividades recientes
+            // Obtener datos para actividades recientes
             const clientsWithSub = await getClientsWithSubscription();
             const payments = await getPayments();
 
@@ -171,7 +168,7 @@ const DashboardScreen = () => {
         }
     };
 
-    // ✅ Generar actividades recientes
+    // ✅ Generar actividades recientes desde datos
     const generateRecentActivities = (
         clients: ClientWithSubscription[],
         payments: any[]
@@ -220,7 +217,7 @@ const DashboardScreen = () => {
         return activities.slice(0, 5);
     };
 
-    // ✅ Formatear fechas
+    // ✅ Formatear fechas de forma legible
     const formatDate = (date: Date): string => {
         try {
             const today = new Date();
@@ -247,12 +244,14 @@ const DashboardScreen = () => {
         }
     };
 
+    // ✅ Manejar refresco de datos
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await loadDashboardData();
         setRefreshing(false);
     }, []);
 
+    // ✅ Manejar acciones rápidas
     const handleQuickAction = (action: string) => {
         switch (action) {
             case 'clients':
@@ -262,7 +261,7 @@ const DashboardScreen = () => {
                 router.push('/(clients)/newMember');
                 break;
             case 'expiring':
-              router.push('/(clients)/membersList');
+                router.push('/(clients)/membersList');
                 break;
             default:
                 console.log(`Action: ${action}`);
@@ -271,7 +270,7 @@ const DashboardScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="white" />
+            {/* ✅ StatusBar ya está configurado globalmente en _layout.tsx */}
 
             <ScrollView
                 style={styles.scrollView}
@@ -280,7 +279,7 @@ const DashboardScreen = () => {
                 }
                 showsVerticalScrollIndicator={false}
             >
-                {/* HEADER */}
+                {/* HEADER - Saludo y fecha */}
                 <View style={styles.header}>
                     <Text style={styles.welcomeText}>¡Buen día!</Text>
                     <Text style={styles.gymTitle}>Panel de Control</Text>

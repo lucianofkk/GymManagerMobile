@@ -10,11 +10,10 @@ export const styles = StyleSheet.create({
   // HEADER
   // ════════════════════════════════════════════════
 header: {
-  paddingTop: 20,
+  paddingTop: 40,
   paddingBottom: 16,
   backgroundColor: '#1E40AF',
-  borderBottomLeftRadius: 10,
-  borderBottomRightRadius: 10,
+
   alignItems: 'center', // 👈 centramos el contenido principal
   justifyContent: 'center',
   position: 'relative', // 👈 permite posicionar el botón atrás dentro
