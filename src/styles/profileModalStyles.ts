@@ -1,12 +1,17 @@
-// src/styles/profileModalStyles.ts - ACTUALIZADO PARA LUCIDE ICONS
+// src/styles/profileModalStyles.ts
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * ESTILOS: MODAL DE PERFIL DE CLIENTE
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Paleta: Azul (#1E40AF) + Blanco + Grises + Colores de estado
+ * 
+ * 📌 CAMBIOS NUEVOS:
+ * ✅ Estilo para aviso de cliente inactivo
+ * ✅ Estilo para botón de peligro (rojo)
+ * ✅ Soporte para Lucide Icons / Material Community Icons
+ */
 
 import { StyleSheet } from 'react-native';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// ESTILOS: MODAL DE PERFIL DE CLIENTE
-// Paleta: Azul (#1E40AF) + Blanco + Grises + Colores de estado
-// Con soporte para Lucide Icons
-// ═══════════════════════════════════════════════════════════════════════════
 
 export const styles = StyleSheet.create({
   // ═════════════════════════════════════════════════════════════════════════
@@ -25,6 +30,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 380,
+    maxHeight: '90%', // 📌 NUEVO: Limita altura para que no salga del área segura
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -61,11 +67,9 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  // ═════════════════════════════════════════════════════════════════════════
-  // SECCIÓN: Contenido scrolleable
-  // ═════════════════════════════════════════════════════════════════════════
+  // Contenido scrolleable
   modalContent: {
-    padding: 24,
+    padding: 20, // 📌 AJUSTADO: Reduce padding para dejar más espacio
   },
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -83,7 +87,7 @@ export const styles = StyleSheet.create({
     marginRight: 16,
   },
 
-  // 📌 ACTUALIZADO: Avatar para Lucide icons
+  // Avatar para iconos
   modalAvatar: {
     width: 72,
     height: 72,
@@ -111,7 +115,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  // 📌 NUEVO: Estilos para filas con iconos
+  // Estilos para filas con iconos
   contactRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -125,7 +129,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // 📌 NUEVO: Estilos para nombre del plan con icono
+  // Estilos para nombre del plan con icono
   planNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -161,7 +165,7 @@ export const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  // 📌 NUEVO: Contenedor para sin plan
+  // Contenedor para sin plan
   noPlanContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -198,7 +202,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // 📌 ACTUALIZADO: Badge de estado con soporte para iconos
+  // Badge de estado con soporte para iconos
   statusBadgeModal: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -215,7 +219,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // 📌 NUEVO: Contenedor para información de expiración
+  // Contenedor para información de expiración
   expirationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -280,9 +284,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
   },
 
-  // Botón Peligro (Rojo)
+  // 📌 NUEVO: Botón Peligro (Rojo) - Para borrar cliente
   dangerButton: {
     backgroundColor: '#EF4444',
+    borderColor: '#DC2626',
+    borderWidth: 1,
   },
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -292,6 +298,28 @@ export const styles = StyleSheet.create({
     gap: 12,
     marginVertical: 16,
     paddingVertical: 8,
+  },
+
+  // 📌 NUEVO: Aviso de cliente inactivo
+  inactiveClientWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    backgroundColor: '#FEE2E2', // Fondo rojo claro
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#EF4444', // Borde rojo oscuro
+    marginBottom: 8,
+  },
+
+  // 📌 NUEVO: Texto del aviso de inactivo
+  inactiveClientText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#991B1B', // Rojo oscuro del texto
   },
 
   // ═════════════════════════════════════════════════════════════════════════
@@ -327,7 +355,7 @@ export const styles = StyleSheet.create({
     minWidth: 90,
   },
 
-  // 📌 NUEVO: Contenedor para valores con iconos
+  // Contenedor para valores con iconos
   infoValueContainer: {
     flex: 1,
     flexDirection: 'row',

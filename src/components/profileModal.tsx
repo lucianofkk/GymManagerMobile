@@ -1,18 +1,27 @@
-// src/components/profileModal.tsx - ARREGLADO
+// src/components/profileModal.tsx - ACTUALIZADO
 /**
- * 🔧 CAMBIO CLAVE:
- * - "Renovar Plan" SOLO aparece si isExpired (< 0)
- * - NO aparece si isExpiringSoon (0-7 días)
- * - Cuando paga vigente: suma 30 días desde endDate
- * - Cuando paga vencido: suma 30 días desde paymentDate + multa
+ * 🔧 CAMBIOS PRINCIPALES:
+ * ✅ Botón "Borrar Cliente" SOLO aparece si cliente está inactivo (isActive === false)
+ * ✅ Modal de confirmación antes de eliminar permanentemente
+ * ✅ Recarga lista después de borrar exitosamente
+ * ✅ Manejo de errores con alertas visuales
  */
 
 import { ClientWithSubscription } from '@/types/type';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { getClientWithSubscription } from '../services/businessLogic';
+import { permanentlyDeleteClient } from '../services/clientService';
 import { styles } from '../styles/profileModalStyles';
 import { AssignPlanModal } from './assignPlanModal';
 import { RegisterPaymentModal } from './registerPaymentModal';
@@ -36,6 +45,7 @@ const IconNames = {
   checkCircle: 'check-circle',
   dollarSign: 'cash',
   clock: 'clock-outline',
+  trash: 'delete', // ← NUEVO: Icono de basura
 };
 
 interface MaterialIconProps {
@@ -63,12 +73,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [showAssignPlan, setShowAssignPlan] = useState(false);
   const [showRegisterPayment, setShowRegisterPayment] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); // ← NUEVO
   const router = useRouter();
 
   useEffect(() => {
     setMember(initialMember);
   }, [initialMember]);
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: Recargar datos del cliente
+  // ═══════════════════════════════════════════════════════════════════════
   const reloadMemberData = async () => {
     if (!member?.id) return;
 
@@ -83,6 +97,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
   };
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: Editar perfil del cliente
+  // ═══════════════════════════════════════════════════════════════════════
   const handleEditProfile = () => {
     if (!member?.id) return;
     onClose();
@@ -90,6 +107,74 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       pathname: '/(clients)/editMember',
       params: { clientId: member.id },
     });
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: NUEVA - Mostrar confirmación y borrar cliente
+  // ═══════════════════════════════════════════════════════════════════════
+  const handleDeleteClient = () => {
+    if (!member?.id) return;
+
+    // 📌 Mostrar alerta de confirmación
+    Alert.alert(
+      '⚠️ Eliminar Cliente Permanentemente',
+      `¿Estás seguro que deseas eliminar a ${member.firstName} ${member.lastName}? Esta acción no se puede deshacer.`,
+      [
+        {
+          text: 'Cancelar',
+          onPress: () => console.log('Eliminación cancelada'),
+          style: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          onPress: confirmDeleteClient,
+          style: 'destructive',
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // FUNCIÓN: NUEVA - Confirmar y ejecutar borrado
+  // ═══════════════════════════════════════════════════════════════════════
+  const confirmDeleteClient = async () => {
+    if (!member?.id) return;
+
+    try {
+      setIsDeleting(true);
+
+      // 🗑️ Llamar servicio para borrar permanentemente
+      await permanentlyDeleteClient(member.id);
+
+      console.log(`✅ Cliente ${member.firstName} ${member.lastName} eliminado`);
+
+      // ✅ Mostrar mensaje de éxito
+      Alert.alert(
+        '✅ Éxito',
+        `Cliente ${member.firstName} eliminado correctamente`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // 🔄 Cerrar modal y recargar lista
+              onClose();
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('❌ Error eliminando cliente:', error);
+
+      // ❌ Mostrar error
+      Alert.alert(
+        '❌ Error',
+        'No se pudo eliminar el cliente. Intenta de nuevo.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!member) return null;
@@ -121,11 +206,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   const paymentStatus = getPaymentStatus();
   const hasSubscription = !!member.subscription;
-  
-  // ✅ ARREGLADO: isExpired es SOLO para vencidas (< 0)
   const isExpired = (member.daysUntilExpiration || 0) < 0;
-  
-  // ✅ isExpiringSoon es para las que vencen pronto (0-7 días)
   const isExpiringSoon = (member.daysUntilExpiration || 0) <= 7 && (member.daysUntilExpiration || 0) >= 0;
 
   return (
@@ -206,9 +287,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       </View>
                     )}
 
-                    {/* ═══════════════════════════════════════════════════ */}
                     {/* Estado de la suscripción */}
-                    {/* ═══════════════════════════════════════════════════ */}
                     <View style={styles.quotaContainerModal}>
                       <Text style={styles.quotaLabelModal}>ESTADO SUSCRIPCIÓN</Text>
                       <View
@@ -274,13 +353,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </View>
 
                 {/* ═══════════════════════════════════════════════════════ */}
-                {/* BOTÓN: Editar perfil */}
+                {/* BOTÓN: Editar perfil (SIEMPRE visible) */}
                 {/* ═══════════════════════════════════════════════════════ */}
                 <TouchableOpacity
                   style={[styles.actionButton, styles.editButton]}
                   onPress={handleEditProfile}
+                  disabled={isDeleting}
                 >
-                  <MaterialIcon name={IconNames.edit} size={18} color="#ffffffff" />
+                  <MaterialIcon name={IconNames.edit} size={18} color="#ffffff" />
                   <Text style={styles.actionButtonText}>Editar Perfil</Text>
                 </TouchableOpacity>
 
@@ -288,52 +368,80 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 {/* BOTONES: Acciones de suscripción */}
                 {/* ═══════════════════════════════════════════════════════ */}
                 <View style={styles.actionsContainer}>
-                  {/* 1️⃣ SIN SUSCRIPCIÓN: Mostrar "Asignar Plan" */}
-                  {!hasSubscription && (
-                    <TouchableOpacity
-                      style={[styles.actionButton, styles.primaryButton]}
-                      onPress={() => setShowAssignPlan(true)}
-                    >
-                      <MaterialIcon name={IconNames.plus} size={18} color="white" />
-                      <Text style={styles.actionButtonText}>Asignar Plan</Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {/* 2️⃣ CON SUSCRIPCIÓN */}
-                  {hasSubscription && (
+                  {/* Cliente ACTIVO - Mostrar acciones normales */}
+                  {member.isActive ? (
                     <>
-                      {/* 💰 Botón "Registrar Pago" - Solo si NO está pagada */}
-                      {member.subscription?.paymentStatus !== 'paid' && (
+                      {!hasSubscription && (
                         <TouchableOpacity
-                          style={[styles.actionButton, styles.successButton]}
-                          onPress={() => setShowRegisterPayment(true)}
+                          style={[styles.actionButton, styles.primaryButton]}
+                          onPress={() => setShowAssignPlan(true)}
+                          disabled={isDeleting}
                         >
-                          <MaterialIcon
-                            name={IconNames.dollarSign}
-                            size={18}
-                            color="white"
-                          />
-                          <Text style={styles.actionButtonText}>Registrar Pago</Text>
+                          <MaterialIcon name={IconNames.plus} size={18} color="white" />
+                          <Text style={styles.actionButtonText}>Asignar Plan</Text>
                         </TouchableOpacity>
                       )}
 
-                      {/* 🔄 Botón "Renovar Plan" - ✅ SOLO si está VENCIDA (< 0) */}
-                      {isExpired && (
-                        <TouchableOpacity
-                          style={[styles.actionButton, styles.warningButton]}
-                          onPress={() => setShowAssignPlan(true)}
-                        >
-                          <MaterialIcon
-                            name={IconNames.refresh}
-                            size={18}
-                            color="white"
-                          />
-                          <Text style={styles.actionButtonText}>Renovar Plan</Text>
-                        </TouchableOpacity>
+                      {hasSubscription && (
+                        <>
+                          {member.subscription?.paymentStatus !== 'paid' && (
+                            <TouchableOpacity
+                              style={[styles.actionButton, styles.successButton]}
+                              onPress={() => setShowRegisterPayment(true)}
+                              disabled={isDeleting}
+                            >
+                              <MaterialIcon
+                                name={IconNames.dollarSign}
+                                size={18}
+                                color="white"
+                              />
+                              <Text style={styles.actionButtonText}>Registrar Pago</Text>
+                            </TouchableOpacity>
+                          )}
+
+                          {isExpired && (
+                            <TouchableOpacity
+                              style={[styles.actionButton, styles.warningButton]}
+                              onPress={() => setShowAssignPlan(true)}
+                              disabled={isDeleting}
+                            >
+                              <MaterialIcon
+                                name={IconNames.refresh}
+                                size={18}
+                                color="white"
+                              />
+                              <Text style={styles.actionButtonText}>Renovar Plan</Text>
+                            </TouchableOpacity>
+                          )}
+                        </>
                       )}
                     </>
-                  )}
+                  ) : null}
                 </View>
+
+                {/* ═══════════════════════════════════════════════════════ */}
+                {/* 📌 NUEVO: Botón BORRAR CLIENTE (Solo si está inactivo) */}
+                {/* ═══════════════════════════════════════════════════════ */}
+                {!member.isActive && (
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.dangerButton]}
+                    onPress={handleDeleteClient}
+                    disabled={isDeleting}
+                    activeOpacity={0.7}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <ActivityIndicator color="white" size="small" />
+                        <Text style={styles.actionButtonText}>Eliminando...</Text>
+                      </>
+                    ) : (
+                      <>
+                        <MaterialIcon name={IconNames.trash} size={18} color="white" />
+                        <Text style={styles.actionButtonText}>Borrar Cliente</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
 
                 {/* ═══════════════════════════════════════════════════════ */}
                 {/* SECCIÓN: Información detallada */}
