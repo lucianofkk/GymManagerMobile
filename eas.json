@@ -8,12 +8,21 @@
       "developmentClient": true,
       "distribution": "internal"
     },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-    },
+"preview": {
+  "distribution": "internal",
+  "android": {
+    "buildType": "apk"
+  },
+  "env": {
+    "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyDDq7N-RJKigchEiVinipn0_eCBBjjzyUA",
+    "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "veo-s-gym.firebaseapp.com",
+    "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "veo-s-gym",
+    "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "veo-s-gym.firebasestorage.app",
+    "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "969800226524",
+    "EXPO_PUBLIC_FIREBASE_APP_ID": "1:969800226524:web:f54bdd8a35a23633424619",
+    "EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-E2SCBGZ2S0"
+  }
+},
     "production": {
       "autoIncrement": true
     }
