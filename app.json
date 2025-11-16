@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "GymManagerMobile",
+    "name": "VEOS GYM",
     "slug": "GymManagerMobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,13 @@
       },
       "icon": "./src/assets/images/icon.png",
       "edgeToEdgeEnabled": true,
-      "package": "com.ellfk.GymManagerMobile"
+      "package": "com.ellfk.GymManagerMobile",
+            "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.INTERNET"
+      ]
     },
     "web": {
       "bundler": "metro",

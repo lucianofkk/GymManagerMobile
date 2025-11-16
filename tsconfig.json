@@ -11,7 +11,8 @@
   "include": [
     "src/**/*",
     ".expo/types/**/*.ts",
-    "env.d.ts"
+    "env.d.ts",
+    "expo-env.d.ts"
   ],
   "exclude": [
     "node_modules"
