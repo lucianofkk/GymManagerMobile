@@ -10,13 +10,19 @@ export const styles = StyleSheet.create({
   // HEADER
   // ════════════════════════════════════════════════
 header: {
-  paddingTop: 40,
+  paddingTop: 20,
   paddingBottom: 16,
-  backgroundColor: '#1E40AF',
-
+  backgroundColor: '#e6eef8ff',
+  borderBottomLeftRadius: 32,
+  borderBottomRightRadius: 32,
   alignItems: 'center', // 👈 centramos el contenido principal
   justifyContent: 'center',
   position: 'relative', // 👈 permite posicionar el botón atrás dentro
+  shadowColor: '#1E40AF',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.3,
+  shadowRadius: 16,
+  elevation: 10,
 },
 backButtonContainer: {
   position: 'absolute',
@@ -25,21 +31,24 @@ backButtonContainer: {
 },
 backButton: {
   fontSize: 35,
-  color: '#E5E7EB',
+  color: '#1E40AF',
 },
 headerCenter: {
   alignItems: 'center',
 },
-headerTitle: {
-  fontSize: 22,
-  fontWeight: 'bold',
-  color: '#FFFFFF',
-},
-headerSubtitle: {
-  fontSize: 14,
-  color: '#E0E7FF',
-  marginTop: 4,
-},
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#000000ff',
+    marginBottom: 10,
+    letterSpacing: -0.5,
+  },
+
+  headerSubtitle: {
+    fontSize: 15,
+    color: 'rgba(0, 0, 0, 0.85)',
+    fontWeight: '500',
+  },
 
 
   // ════════════════════════════════════════════════

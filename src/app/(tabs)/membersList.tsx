@@ -94,7 +94,7 @@ export default function MembersListScreen() {
   const getStatusColor = (client: ClientWithSubscription) => {
     const days = client.daysUntilExpiration || 0;
     if (days < 0) return '#EF4444'; // Rojo
-    if (days <= 7) return '#FBBF24'; // Amarillo
+    if (days <= 5) return '#FBBF24'; // Amarillo
     return '#10B981'; // Verde
   };
 
@@ -118,7 +118,7 @@ export default function MembersListScreen() {
     </TouchableOpacity>
 
     <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Miembros</Text>
+            <Text style={styles.headerTitle}>Clientes</Text>
             <Text style={styles.headerSubtitle}>{members.length} clientes registrados</Text>
         </View>
     </View>

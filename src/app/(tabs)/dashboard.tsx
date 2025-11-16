@@ -255,13 +255,13 @@ const DashboardScreen = () => {
     const handleQuickAction = (action: string) => {
         switch (action) {
             case 'clients':
-                router.push('/(clients)/membersList');
+                router.push('/(tabs)/membersList');
                 break;
             case 'add_client':
                 router.push('/(clients)/newMember');
                 break;
             case 'expiring':
-                router.push('/(clients)/membersList');
+                router.push('/(tabs)/membersList');
                 break;
             default:
                 console.log(`Action: ${action}`);
