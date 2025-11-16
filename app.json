@@ -14,10 +14,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/adaptive-icon.png",
+        "foregroundImage": "./src/assets/images/LOGO-APP.png",
         "backgroundColor": "#ffffff"
       },
-      "icon": "./src/assets/images/icon.png",
+      "icon": "./src/assets/images/LOGO-APP.png",
       "edgeToEdgeEnabled": true,
       "package": "com.ellfk.GymManagerMobile",
             "permissions": [
