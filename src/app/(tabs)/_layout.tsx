@@ -33,10 +33,14 @@ export default function TabsLayout() {
         // ESTILOS DE LA BARRA DE NAVEGACIÓN
         // Fondo azul, sin borde superior (se integra mejor)
         // ═══════════════════════════════════════════════════════════════
-        tabBarStyle: {
-          backgroundColor: '#1E40AF',
-          borderTopWidth: 0,
-        },
+       tabBarStyle: {
+    backgroundColor: '#1E40AF',
+    borderTopWidth: 0,
+  },
+  // ✅ AGREGÁ ESTO:
+  sceneStyle: {
+    backgroundColor: '#FFFFFF',
+  },
       }}
     >
       {/* ═══════════════════════════════════════════════════════════════ */}

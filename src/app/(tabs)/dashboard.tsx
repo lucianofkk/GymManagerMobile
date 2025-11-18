@@ -274,6 +274,7 @@ const DashboardScreen = () => {
 
             <ScrollView
                 style={styles.scrollView}
+                 contentContainerStyle={{ paddingBottom: 100 }}  // ✅ AGREGÁ ESTO
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                 }

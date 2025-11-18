@@ -197,10 +197,10 @@ export const styles = StyleSheet.create({
     // ═══════════════════════════════════════════════════════════════
     // ACTIVIDAD RECIENTE - Contenedor moderno
     // ═══════════════════════════════════════════════════════════════
-    activitiesContainer: {
-        paddingHorizontal: 20,
-        paddingBottom: 40,
-    },
+activitiesContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 80,  // ✅ CAMBIÉ de 40 a 80
+},
 
     activityIconContainer: {
         width: 40,
